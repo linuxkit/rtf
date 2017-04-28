@@ -182,6 +182,17 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, r := range res {
+		testResult := []string{
+			id.String(),
+			r.EndTime.Format(time.RFC3339),
+			strconv.FormatFloat(r.Duration.Seconds(), 'f', -1, 32),
+			r.Name,
+			fmt.Sprintf("%d", r.TestResult),
+			"",
+		}
+		if err = tCsv.Write(testResult); err != nil {
+			return err
+		}
 		switch r.TestResult {
 		case local.Pass:
 			passed++
@@ -212,6 +223,8 @@ func run(cmd *cobra.Command, args []string) error {
 	if err = sCsv.Write(summary); err != nil {
 		return err
 	}
+
+	tCsv.Flush()
 	sCsv.Flush()
 
 	log.Log(logger.LevelSummary, fmt.Sprintf("LogDir: %s", id))
