@@ -4,7 +4,7 @@ import "testing"
 
 func TestParseTags(t *testing.T) {
 	eSummary := "A Test"
-	eAuthor := "Dave Tucker <dt@docker.com> Rolf Neugebauer <rofl.neugebauer@docker.com>"
+	eAuthor := "Dave Tucker <dt@docker.com> Rolf Neugebauer <rolf.neugebauer@docker.com>"
 	eLabels := "foo, bar, !baz"
 	eRepeat := 5
 
