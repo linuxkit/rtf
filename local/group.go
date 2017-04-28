@@ -120,13 +120,39 @@ func (g *Group) Name() string {
 	return g.Tags.Name
 }
 
-func (g *Group) List() []*Test {
-	result := []*Test{}
+func (g *Group) List(config RunConfig) []Result {
+	result := []Result{}
+
+	if !WillRun(g.Labels, g.NotLabels, config.Labels, config.NotLabels) {
+		return []Result{{
+			TestResult: Skip,
+			Name:       g.Name(),
+			Summary:    g.Tags.Summary,
+			Labels:     g.LabelString(),
+		}}
+	}
+
 	for _, c := range g.Children {
-		lst := c.List()
+		lst := c.List(config)
 		result = append(result, lst...)
 	}
-	result = append(result, g.Tests...)
+
+	for _, t := range g.Tests {
+		if WillRun(t.Labels, t.NotLabels, config.Labels, config.NotLabels) {
+			result = append(result, Result{
+				Name:    t.Name(),
+				Summary: t.Tags.Summary,
+				Labels:  t.LabelString(),
+			})
+		} else {
+			result = append(result, Result{
+				TestResult: Skip,
+				Name:       t.Name(),
+				Summary:    t.Tags.Summary,
+				Labels:     t.LabelString(),
+			})
+		}
+	}
 	return result
 }
 

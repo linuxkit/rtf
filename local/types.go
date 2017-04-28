@@ -32,7 +32,6 @@ type Group struct {
 type Test struct {
 	Parent    *Group
 	Tags      *Tags
-	WillRun   bool
 	Path      string
 	Command   exec.Cmd
 	Repeat    int
@@ -58,6 +57,8 @@ type Result struct {
 	EndTime    time.Time
 	Duration   time.Duration
 	Name       string
+	Summary    string
+	Labels     string
 }
 
 type OSInfo struct {

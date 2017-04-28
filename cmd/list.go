@@ -48,7 +48,7 @@ func list(cmd *cobra.Command, args []string) error {
 	// a := strings.Join(args, "")
 
 	systemInfo := sysinfo.GetSystemInfo()
-	l, _ := local.ParseLabels(labels)
+	l, nl := local.ParseLabels(labels)
 	for _, v := range systemInfo.List() {
 		if _, ok := l[v]; !ok {
 			l[v] = true
@@ -65,16 +65,21 @@ func list(cmd *cobra.Command, args []string) error {
 	w := new(tabwriter.Writer)
 	w.Init(os.Stdout, 0, 8, 0, '\t', 0)
 
-	lst := p.List()
+	config := local.RunConfig{
+		Labels:    l,
+		NotLabels: nl,
+	}
+
+	lst := p.List(config)
 	fmt.Fprintf(w, "STATE\tTEST\tLABELS\n")
 	for _, t := range lst {
 		var state string
-		if t.WillRun {
-			state = green("RUN")
-		} else {
+		if t.TestResult == local.Skip {
 			state = yellow("SKIP")
+		} else {
+			state = green("RUN")
 		}
-		fmt.Fprintf(w, "%s\t%s\t%s\n", state, t.Name(), t.LabelString())
+		fmt.Fprintf(w, "%s\t%s\t%s\n", state, t.Name, t.Labels)
 	}
 	w.Flush()
 	return nil
