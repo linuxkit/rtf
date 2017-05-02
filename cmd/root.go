@@ -34,7 +34,7 @@ var (
 
 // This represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
-	Use:   "rt-local",
+	Use:   os.Args[0],
 	Short: "Run or provide information about local regression tests",
 	// Uncomment the following line if your bare application
 	// has an action associated with it:

@@ -73,7 +73,7 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 	var results []Result
 	appendIteration := false
 
-	if !WillRun(t.Labels, t.NotLabels, config.Labels, config.NotLabels) {
+	if !WillRun(t.Name(), t.Labels, t.NotLabels, config) {
 		config.Logger.Log(logger.LevelSkip, fmt.Sprintf("%s %.2fs", t.Name(), 0.0))
 		return []Result{{TestResult: Skip,
 			Name: t.Name(),

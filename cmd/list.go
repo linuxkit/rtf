@@ -17,6 +17,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 	"text/tabwriter"
 
 	"github.com/dave-tucker/rtf/local"
@@ -45,7 +46,7 @@ func list(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("Expected only one test pattern")
 	}
 
-	// a := strings.Join(args, "")
+	pattern := strings.Join(args, "")
 
 	systemInfo := sysinfo.GetSystemInfo()
 	l, nl := local.ParseLabels(labels)
@@ -66,8 +67,9 @@ func list(cmd *cobra.Command, args []string) error {
 	w.Init(os.Stdout, 0, 8, 0, '\t', 0)
 
 	config := local.RunConfig{
-		Labels:    l,
-		NotLabels: nl,
+		TestPattern: pattern,
+		Labels:      l,
+		NotLabels:   nl,
 	}
 
 	lst := p.List(config)
