@@ -11,7 +11,7 @@ import (
 )
 
 func NewTest(group *Group, path string) (*Test, error) {
-	t := &Test{Parent: group, Path: path, WillRun: true}
+	t := &Test{Parent: group, Path: path}
 	if err := t.Init(); err != nil {
 		return nil, err
 	}
