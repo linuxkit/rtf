@@ -9,7 +9,7 @@ clean:
 	rm -rf $(BINARIES)
 
 rt-local:
-	@go build rt-local.go
+	@go build -o rt-local main.go
 
 test: 
 	@go test $(PACKAGES)
