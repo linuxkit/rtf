@@ -25,12 +25,7 @@ func ParseLabels(labels string) (map[string]bool, map[string]bool) {
 	return set, unSet
 }
 
-func WillRun(name string, labels, notLabels map[string]bool, config RunConfig) bool {
-	// 1. Check that name begins with the TestPattern
-	if !strings.HasPrefix(name, config.TestPattern) {
-		return false
-	}
-
+func WillRun(labels, notLabels map[string]bool, config RunConfig) bool {
 	// 2. Check every test label is in the hostLabels
 	for l := range labels {
 		if _, ok := config.Labels[l]; !ok {
@@ -48,6 +43,14 @@ func WillRun(name string, labels, notLabels map[string]bool, config RunConfig) b
 		if _, ok := labels[l]; ok {
 			return false
 		}
+	}
+	return true
+}
+
+func CheckPattern(name, pattern string) bool {
+	// 1. Check that name begins with the TestPattern
+	if !strings.HasPrefix(name, pattern) {
+		return false
 	}
 	return true
 }
