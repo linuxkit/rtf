@@ -77,7 +77,7 @@ func run(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("Expected only one test pattern")
 	}
 
-	//a := strings.Join(args, "")
+	pattern := strings.Join(args, "")
 
 	systemInfo := sysinfo.GetSystemInfo()
 	l, nl := local.ParseLabels(labels)
@@ -168,13 +168,14 @@ func run(cmd *cobra.Command, args []string) error {
 	var passed, failed, skipped, cancelled int
 	startTime := time.Now()
 	runConfig := local.RunConfig{
-		Extra:      extra,
-		CaseDir:    caseDir,
-		LogDir:     baseDir,
-		Logger:     log,
-		SystemInfo: systemInfo,
-		Labels:     l,
-		NotLabels:  nl,
+		TestPattern: pattern,
+		Extra:       extra,
+		CaseDir:     caseDir,
+		LogDir:      baseDir,
+		Logger:      log,
+		SystemInfo:  systemInfo,
+		Labels:      l,
+		NotLabels:   nl,
 	}
 	res, err := p.Run(runConfig)
 	if err != nil {

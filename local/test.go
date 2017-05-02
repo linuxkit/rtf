@@ -11,7 +11,7 @@ import (
 )
 
 func NewTest(group *Group, path string) (*Test, error) {
-	t := &Test{Parent: group, Path: path, WillRun: true}
+	t := &Test{Parent: group, Path: path}
 	if err := t.Init(); err != nil {
 		return nil, err
 	}
@@ -73,7 +73,8 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 	var results []Result
 	appendIteration := false
 
-	if !WillRun(t.Labels, t.NotLabels, config.Labels, config.NotLabels) {
+	// NAND WillRun CheckPattern
+	if !(WillRun(t.Labels, t.NotLabels, config) && CheckPattern(t.Name(), config.TestPattern)) {
 		config.Logger.Log(logger.LevelSkip, fmt.Sprintf("%s %.2fs", t.Name(), 0.0))
 		return []Result{{TestResult: Skip,
 			Name: t.Name(),

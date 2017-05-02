@@ -69,11 +69,12 @@ type OSInfo struct {
 }
 
 type RunConfig struct {
-	Extra      bool
-	CaseDir    string
-	LogDir     string
-	Logger     logger.LogDispatcher
-	SystemInfo sysinfo.SystemInfo
-	Labels     map[string]bool
-	NotLabels  map[string]bool
+	Extra       bool
+	CaseDir     string
+	LogDir      string
+	Logger      logger.LogDispatcher
+	SystemInfo  sysinfo.SystemInfo
+	Labels      map[string]bool
+	NotLabels   map[string]bool
+	TestPattern string
 }

@@ -25,24 +25,32 @@ func ParseLabels(labels string) (map[string]bool, map[string]bool) {
 	return set, unSet
 }
 
-func WillRun(labels, notLabels, hostLabels, hostNotLabels map[string]bool) bool {
-	// 1. Check every test label is in the hostLabels
-	for l, _ := range labels {
-		if _, ok := hostLabels[l]; !ok {
+func WillRun(labels, notLabels map[string]bool, config RunConfig) bool {
+	// 2. Check every test label is in the hostLabels
+	for l := range labels {
+		if _, ok := config.Labels[l]; !ok {
 			return false
 		}
 	}
-	// 2. Check every test notLabel is NOT in the hostLabels
-	for l, _ := range notLabels {
-		if _, ok := hostLabels[l]; ok {
+	// 3. Check every test notLabel is NOT in the hostLabels
+	for l := range notLabels {
+		if _, ok := config.Labels[l]; ok {
 			return false
 		}
 	}
-	// 3. Check that none of the test labels appear in the hostNotLabels
-	for l, _ := range hostNotLabels {
+	// 4. Check that none of the test labels appear in the hostNotLabels
+	for l := range config.NotLabels {
 		if _, ok := labels[l]; ok {
 			return false
 		}
+	}
+	return true
+}
+
+func CheckPattern(name, pattern string) bool {
+	// 1. Check that name begins with the TestPattern
+	if !strings.HasPrefix(name, pattern) {
+		return false
 	}
 	return true
 }

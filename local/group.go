@@ -123,7 +123,7 @@ func (g *Group) Name() string {
 func (g *Group) List(config RunConfig) []Result {
 	result := []Result{}
 
-	if !WillRun(g.Labels, g.NotLabels, config.Labels, config.NotLabels) {
+	if !WillRun(g.Labels, g.NotLabels, config) {
 		return []Result{{
 			TestResult: Skip,
 			Name:       g.Name(),
@@ -138,7 +138,7 @@ func (g *Group) List(config RunConfig) []Result {
 	}
 
 	for _, t := range g.Tests {
-		if WillRun(t.Labels, t.NotLabels, config.Labels, config.NotLabels) {
+		if WillRun(t.Labels, t.NotLabels, config) && CheckPattern(t.Name(), config.TestPattern) {
 			result = append(result, Result{
 				Name:    t.Name(),
 				Summary: t.Tags.Summary,
@@ -159,7 +159,7 @@ func (g *Group) List(config RunConfig) []Result {
 func (g *Group) Run(config RunConfig) ([]Result, error) {
 	var results []Result
 
-	if !WillRun(g.Labels, g.NotLabels, config.Labels, config.NotLabels) {
+	if !WillRun(g.Labels, g.NotLabels, config) {
 		return []Result{{TestResult: Skip,
 			Name:      g.Name(),
 			StartTime: time.Now(),
