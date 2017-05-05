@@ -48,7 +48,7 @@ Cobra provides:
 * Automatically generated bash autocomplete for your application
 * Automatically generated man pages for your application
 * Command aliases so you can change things without breaking them
-* The flexibilty to define your own help, usage, etc.
+* The flexibility to define your own help, usage, etc.
 * Optional tight integration with [viper](http://github.com/spf13/viper) for 12-factor apps
 
 Cobra has an exceptionally clean interface and simple design without needless
@@ -79,11 +79,11 @@ A few good real world examples may better illustrate this point.
 
 In the following example, 'server' is a command, and 'port' is a flag:
 
-    > hugo server --port=1313
+    hugo server --port=1313
 
 In this command we are telling Git to clone the url bare.
 
-    > git clone URL --bare
+    git clone URL --bare
 
 ## Commands
 
@@ -130,7 +130,7 @@ Using Cobra is easy. First, use `go get` to install the latest version
 of the library. This command will install the `cobra` generator executible
 along with the library:
 
-    > go get -v github.com/spf13/cobra/cobra
+    go get -v github.com/spf13/cobra/cobra
 
 Next, include Cobra in your application:
 
@@ -180,7 +180,7 @@ commands you want. It's the easiest way to incorporate Cobra into your applicati
 
 In order to use the cobra command, compile it using the following command:
 
-    > go get github.com/spf13/cobra/cobra
+    go get github.com/spf13/cobra/cobra
 
 This will create the cobra executable under your `$GOPATH/bin` directory.
 
@@ -214,6 +214,10 @@ cobra add serve
 cobra add config
 cobra add create -p 'configCmd'
 ```
+
+*Note: Use camelCase (not snake_case/snake-case) for command names.
+Otherwise, you will become unexpected errors.
+For example, `cobra add add-user` is incorrect, but `cobra add addUser` is valid.*
 
 Once you have run these three commands you would have an app structure that would look like:
 
