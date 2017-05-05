@@ -2,7 +2,7 @@
 
 The regression test framework is written in Go with the bulk
 The main entry point for running local tests is implemented in
-`rt-local.go`.
+`rtf.go`.
 
 The core of the framework is implemented in the `local` module.
 This file provided two objects, `Test` and `Group` which handle

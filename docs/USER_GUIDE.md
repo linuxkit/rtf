@@ -37,7 +37,7 @@ should not be run if a label is defined. The labels are defined with
 
 The regression test framework is completely agnostic to which labels
 are used for a given set of test cases, though it defines a number of
-labels based on the OS it is executing on. See the output of `rt-local
+labels based on the OS it is executing on. See the output of `rtf
 list` on your host.
 
 A good strategy for using labels is to not define any labels for tests
@@ -55,14 +55,14 @@ to execute on every CI run and have them marked with a label `long`,
 then you can execute them with:
 
 ```
-./rt-local -l long run
+./rtf -l long run
 ```
 
 You can see which tests would get executed using the `-l` flag for the
 `list` command as well:
 
 ```
-./rt-local -l long list
+./rtf -l long list
 ```
 
 In addition to control which tests are run via labels it is also
@@ -71,14 +71,14 @@ line to just run these test (subject to labels).  Here are two
 examples:
 
 ```
-./rt-local run foo.bar.example_test
-./rt-local run foo.bar
+./rtf run foo.bar.example_test
+./rtf run foo.bar
 ```
 
 The first runs a single test, while the second is running all tests
 within the `bar` group. Note, that this is currently implemented as
 a simple prefix match, so, if you have tests such as `foo.bar` and
-`foo.bar_baz` and use `./rt-local run foo.bar`, it will execute both
+`foo.bar_baz` and use `./rtf run foo.bar`, it will execute both
 `foo.bar` and `foo.bar_baz`.
 
 
@@ -152,8 +152,8 @@ environment variables into a test script:
   check if a label is set.
 
 Users can specify additional environment variables using the `-e` or
-`--env` command line option to `rt-local`.  This may be useful for
-scenarios where `rt-local` is executed remotely.
+`--env` command line option to `rtf`.  This may be useful for
+scenarios where `rtf` is executed remotely.
 
 
 ### General utilities for writing tests

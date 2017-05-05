@@ -3,8 +3,8 @@ package local
 import (
 	"os/exec"
 
-	"github.com/dave-tucker/rtf/logger"
-	"github.com/dave-tucker/rtf/sysinfo"
+	"github.com/linuxkit/rtf/logger"
+	"github.com/linuxkit/rtf/sysinfo"
 
 	"time"
 )

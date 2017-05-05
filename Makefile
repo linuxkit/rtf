@@ -6,7 +6,7 @@ PACKAGES:=$(shell go list ./... | grep -v vendor)
 GOLINT:=$(shell command -v golint)
 DEPS=$(wildcard *.go) Makefile
 
-CMD_PKG=github.com/dave-tucker/rtf/cmd
+CMD_PKG=github.com/linuxkit/rtf/cmd
 
 rt-local: $(DEPS)
 	go build --ldflags "-X $(CMD_PKG).GitCommit=$(GIT_COMMIT) -X $(CMD_PKG).Version=$(VERSION)" -o $@ main.go

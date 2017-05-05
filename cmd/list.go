@@ -20,8 +20,8 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/dave-tucker/rtf/local"
-	"github.com/dave-tucker/rtf/sysinfo"
+	"github.com/linuxkit/rtf/local"
+	"github.com/linuxkit/rtf/sysinfo"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )

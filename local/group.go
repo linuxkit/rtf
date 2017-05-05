@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dave-tucker/rtf/logger"
+	"github.com/linuxkit/rtf/logger"
 )
 
 func NewProject(path string) (*Group, error) {

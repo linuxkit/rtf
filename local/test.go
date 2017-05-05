@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/dave-tucker/rtf/logger"
+	"github.com/linuxkit/rtf/logger"
 )
 
 func NewTest(group *Group, path string) (*Test, error) {
