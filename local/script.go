@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/dave-tucker/rtf/logger"
+	"github.com/linuxkit/rtf/logger"
 )
 
 func executeScript(script, cwd, name, labels string, args []string, config RunConfig) (Result, error) {
@@ -37,8 +37,8 @@ func executeScript(script, cwd, name, labels string, args []string, config RunCo
 
 	osEnv := os.Environ()
 	goPath := os.Getenv("GOPATH")
-	libDir := filepath.Join(goPath, "src", "github.com", "dave-tucker", "rtf", "lib", "lib.sh")
-	utilsDir := filepath.Join(goPath, "src", "github.com", "dave-tucker", "rtf", "bin")
+	libDir := filepath.Join(goPath, "src", "github.com", "linuxkit", "rtf", "lib", "lib.sh")
+	utilsDir := filepath.Join(goPath, "src", "github.com", "linuxkit", "rtf", "bin")
 	currentDir, err := os.Getwd()
 	if err != nil {
 		return Result{}, err

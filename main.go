@@ -14,7 +14,7 @@
 
 package main
 
-import "github.com/dave-tucker/rtf/cmd"
+import "github.com/linuxkit/rtf/cmd"
 
 func main() {
 	cmd.Execute()

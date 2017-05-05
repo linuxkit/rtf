@@ -23,9 +23,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dave-tucker/rtf/local"
-	"github.com/dave-tucker/rtf/logger"
-	"github.com/dave-tucker/rtf/sysinfo"
+	"github.com/linuxkit/rtf/local"
+	"github.com/linuxkit/rtf/logger"
+	"github.com/linuxkit/rtf/sysinfo"
 	"github.com/docker/distribution/uuid"
 	"github.com/spf13/cobra"
 )
