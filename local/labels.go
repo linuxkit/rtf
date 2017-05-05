@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// ParseLabels constucts a map[string]bool for both positive and negative labels from a comma separated list
 func ParseLabels(labels string) (map[string]bool, map[string]bool) {
 	set := make(map[string]bool)
 	unSet := make(map[string]bool)
@@ -25,6 +26,7 @@ func ParseLabels(labels string) (map[string]bool, map[string]bool) {
 	return set, unSet
 }
 
+// WillRun determines if a group or test should run based on its labels and the RunConfig
 func WillRun(labels, notLabels map[string]bool, config RunConfig) bool {
 	// 2. Check every test label is in the hostLabels
 	for l := range labels {
@@ -47,6 +49,7 @@ func WillRun(labels, notLabels map[string]bool, config RunConfig) bool {
 	return true
 }
 
+// CheckPattern implements a test to see if a given name matches the provided pattern
 func CheckPattern(name, pattern string) bool {
 	// 1. Check that name begins with the TestPattern
 	if !strings.HasPrefix(name, pattern) {

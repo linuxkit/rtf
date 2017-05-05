@@ -12,6 +12,7 @@ import (
 	"github.com/linuxkit/rtf/logger"
 )
 
+// NewProject creates a new top-level Group at the provided path
 func NewProject(path string) (*Group, error) {
 	if !filepath.IsAbs(path) {
 		var err error
@@ -24,6 +25,7 @@ func NewProject(path string) (*Group, error) {
 	return g, nil
 }
 
+// NewGroup creates a new Group with the given parent and path
 func NewGroup(parent *Group, path string) (*Group, error) {
 	g := &Group{Parent: parent, Path: path, PreTest: parent.PreTest, PostTest: parent.PostTest}
 	if err := g.Init(); err != nil {
@@ -32,6 +34,7 @@ func NewGroup(parent *Group, path string) (*Group, error) {
 	return g, nil
 }
 
+// IsGroup determines if a path contains a group
 func IsGroup(path string) bool {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
@@ -50,6 +53,7 @@ func IsGroup(path string) bool {
 	return false
 }
 
+// Init is the group initialization function and should be called immediately after a group has been created
 func (g *Group) Init() error {
 	gf := filepath.Join(g.Path, GroupFile)
 	tags, err := ParseTags(gf)
@@ -112,14 +116,17 @@ func (g *Group) Init() error {
 	return nil
 }
 
+// LabelString provides all labels in a comma separated list
 func (g *Group) LabelString() string {
 	return makeLabelString(g.Labels, g.NotLabels)
 }
 
+// Name returns the name of the group
 func (g *Group) Name() string {
 	return g.Tags.Name
 }
 
+// List lists all child groups and tests
 func (g *Group) List(config RunConfig) []Result {
 	result := []Result{}
 
@@ -156,6 +163,7 @@ func (g *Group) List(config RunConfig) []Result {
 	return result
 }
 
+// Run will run all child groups and tests
 func (g *Group) Run(config RunConfig) ([]Result, error) {
 	var results []Result
 

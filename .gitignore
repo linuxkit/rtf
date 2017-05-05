@@ -29,7 +29,7 @@ _testmain.go
 *.out
 
 # binaries
-rt-local
+rtf
 
 # results
 _results/*

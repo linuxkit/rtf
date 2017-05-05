@@ -9,7 +9,9 @@ import (
 )
 
 var (
-	Version   string
+	// Version string provided at compile time
+	Version string
+	// GitCommit string provided at compile time
 	GitCommit string
 )
 

@@ -20,9 +20,9 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"github.com/fatih/color"
 	"github.com/linuxkit/rtf/local"
 	"github.com/linuxkit/rtf/sysinfo"
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
