@@ -32,7 +32,7 @@ var (
 	verbose    int
 )
 
-// This represents the base command when called without any subcommands
+// RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
 	Use:   os.Args[0],
 	Short: "Run or provide information about local regression tests",

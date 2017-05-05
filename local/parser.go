@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// Tags are the permitted tags within a test file
 type Tags struct {
 	Name    string `rt:"NAME"`
 	Summary string `rt:"SUMMARY"`
@@ -35,6 +36,7 @@ func multiplesAllowed(s string) bool {
 	return false
 }
 
+// ParseTags reads the provided file and returns all discovered tags or an error
 func ParseTags(file string) (*Tags, error) {
 	f, err := os.Open(file)
 	if err != nil {

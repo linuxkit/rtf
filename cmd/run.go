@@ -23,10 +23,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/docker/distribution/uuid"
 	"github.com/linuxkit/rtf/local"
 	"github.com/linuxkit/rtf/logger"
 	"github.com/linuxkit/rtf/sysinfo"
-	"github.com/docker/distribution/uuid"
 	"github.com/spf13/cobra"
 )
 

@@ -10,6 +10,7 @@ import (
 	"github.com/linuxkit/rtf/logger"
 )
 
+// NewTest creates a new test
 func NewTest(group *Group, path string) (*Test, error) {
 	t := &Test{Parent: group, Path: path}
 	if err := t.Init(); err != nil {
@@ -18,6 +19,7 @@ func NewTest(group *Group, path string) (*Test, error) {
 	return t, nil
 }
 
+// IsTest determines if a path contains a test or not
 func IsTest(path string) bool {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
@@ -33,6 +35,7 @@ func IsTest(path string) bool {
 	return false
 }
 
+// Init initializes a test and should be run immmediately after NewTest
 func (t *Test) Init() error {
 	tf := filepath.Join(t.Path, TestFile)
 	tags, err := ParseTags(tf)
@@ -61,14 +64,17 @@ func (t *Test) Init() error {
 	return nil
 }
 
+// Name returns the test's name
 func (t *Test) Name() string {
 	return t.Tags.Name
 }
 
+// LabelString returns all labels in a comma separated string
 func (t *Test) LabelString() string {
 	return makeLabelString(t.Labels, t.NotLabels)
 }
 
+// Run runs a test
 func (t *Test) Run(config RunConfig) ([]Result, error) {
 	var results []Result
 	appendIteration := false
