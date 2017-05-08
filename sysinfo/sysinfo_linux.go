@@ -2,11 +2,13 @@ package sysinfo
 
 import (
 	"io/ioutil"
+	"os/exec"
 	"strings"
 )
 
 func getPlatformSpecifics(info SystemInfo) SystemInfo {
 	info.Name, info.Version = linuxVersion()
+	return info
 }
 
 // getLinuxVersion is a bit tedious as we try to figure out the vendor
@@ -24,9 +26,11 @@ func linuxVersion() (name string, version string) {
 	}
 
 	// lsb_release is the fallback
-	c := Cmd{SystemDir + "lsb_release", "lsb_release", []string{"-a"}, 0}
-	out := c.Gather(ctx, w)
-	for _, line := range strings.Split(out, "\n") {
+	out, err := exec.Command("lsb_release", "-a").Output()
+	if err != nil {
+		return name, version
+	}
+	for _, line := range strings.Split(string(out), "\n") {
 		fs := strings.Split(line, ":")
 		if len(fs) < 2 {
 			continue

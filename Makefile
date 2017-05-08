@@ -1,4 +1,4 @@
-default: rtf
+default: _build/rtf
 
 DEPS=Makefile main.go
 DEPS+=$(wildcard cmd/*.go)
@@ -14,10 +14,45 @@ VERSION="0.0" # dummy for now
 GIT_COMMIT=$(shell git rev-list -1 HEAD)
 CMD_PKG=github.com/linuxkit/rtf/cmd
 PKGS:=$(shell go list ./... | grep -v vendor)
+GOOS?=$(shell go env GOOS)
+GOARCH?=$(shell go env GOARCH)
 
-rtf: $(DEPS) lint test
-	go build --ldflags "-X $(CMD_PKG).GitCommit=$(GIT_COMMIT) -X $(CMD_PKG).Version=$(VERSION)" -o $@ github.com/linuxkit/rtf
+_build:
+	mkdir -p $@
 
+_build/rtf: $(DEPS) lint test | _build
+	@docker build -t rtf-dev -f Dockerfile.build .
+	@docker run --rm \
+		-e GOOS=${GOOS} -e GOARCCH=${GOARCH} \
+		-v ${CURDIR}/_build:/go/src/github.com/linuxkit/rtf/_build \
+		rtf-dev \
+		make build
+
+_build/rtf-darwin-amd64: $(DEPS) | _build
+	@docker build -t rtf-dev -f Dockerfile.build .
+	@docker run --rm \
+		-e GOOS=darwin -e GOARCCH=amd64 \
+		-v ${CURDIR}/_build:/go/src/github.com/linuxkit/rtf/_build \
+		rtf-dev \
+		make build-darwin-amd64
+
+_build/rtf-windows-amd64: $(DEPS) lint test | _build
+	@docker build -t rtf-dev -f Dockerfile.build .
+	@docker run --rm \
+		-e GOOS=windows -e GOARCCH=amd64 \
+		-v ${CURDIR}/_build:/go/src/github.com/linuxkit/rtf/_build \
+		rtf-dev \
+		make build-windows-amd64
+
+_build/rtf-linux-amd64: $(DEPS) lint test | _build
+	@docker build -t rtf-dev -f Dockerfile.build .
+	@docker run --rm \
+		-e GOOS=linux -e GOARCCH=amd64 \
+		-v ${CURDIR}/_build:/go/src/github.com/linuxkit/rtf/_build \
+		rtf-dev \
+		make build-linux-amd64
+
+.PHONY: lint
 lint:
 ifndef GOLINT
 	$(error "Please install golint! go get -u github.com/tool/lint")
@@ -35,14 +70,25 @@ endif
 	# ineffassign
 	@test -z $(find . -type f -name "*.go" -not -path "*/vendor/*" -exec ineffassign {} \; | tee /dev/stderr)
 
-PHONY: test
+.PHONY: build
+build:
+	@go build --ldflags "-X $(CMD_PKG).GitCommit=$(GIT_COMMIT) -X $(CMD_PKG).Version=$(VERSION)" -o _build/rtf github.com/linuxkit/rtf
+
+.PHONY: build-%
+build-%:
+	@go build --ldflags "-X $(CMD_PKG).GitCommit=$(GIT_COMMIT) -X $(CMD_PKG).Version=$(VERSION)" -o _build/rtf-$* github.com/linuxkit/rtf
+
+.PHONY: cross
+cross: _build/rtf-darwin-amd64 _build/rtf-windows-amd64 _build/rtf-linux-amd64
+
+.PHONY: test
 test:
-	go test $(PKGS) 
+	@go test $(PKGS) 
 
-PHONY: install
+.PHONY: install
 install: rtf
-	cp -a $^ $(PREFIX)/bin/
+	@cp -a $^ $(PREFIX)/bin/
 
-PHONY: clean
+.PHONY: clean
 clean:
-	rm -rf rtf
+	@rm -rf rtf _build
