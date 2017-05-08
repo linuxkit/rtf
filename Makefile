@@ -86,7 +86,7 @@ test:
 	@go test $(PKGS) 
 
 .PHONY: install
-install: rtf
+install: _build/rtf
 	@cp -a $^ $(PREFIX)/bin/
 
 .PHONY: clean

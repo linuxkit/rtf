@@ -236,5 +236,8 @@ func run(cmd *cobra.Command, args []string) error {
 	log.Log(logger.LevelSummary, fmt.Sprintf("Skipped: %d", skipped))
 	log.Log(logger.LevelSummary, fmt.Sprintf("Duration: %.2fs", duration.Seconds()))
 
+	if failed > 0 {
+		return fmt.Errorf("Some tests failed")
+	}
 	return nil
 }
