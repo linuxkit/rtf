@@ -34,3 +34,6 @@ rtf
 # results
 _results/*
 *.log
+
+# build
+_build
