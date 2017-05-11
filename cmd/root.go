@@ -34,11 +34,10 @@ var (
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
-	Use:   os.Args[0],
-	Short: "Run or provide information about local regression tests",
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
+	Use:           os.Args[0],
+	Short:         "Run or provide information about local regression tests",
+	SilenceErrors: true,
+	SilenceUsage:  true,
 }
 
 // Execute adds all child commands to the root command sets flags appropriately.
@@ -46,9 +45,10 @@ var RootCmd = &cobra.Command{
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
-		os.Exit(-1)
+		os.Exit(1)
 	}
 }
+
 func init() {
 	cobra.OnInitialize(initConfig)
 
