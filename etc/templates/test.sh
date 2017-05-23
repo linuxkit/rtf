@@ -6,7 +6,7 @@
 
 set -e # Exit on error
 # Source libraries. Uncomment if needed/defined
-#. "${RT_ROOT}/lib/lib.sh"
+#. "${RT_LIB}"
 #. "${RT_PROJECT_ROOT}/_lib/lib.sh"
 # IMAGE_NAME=  # Use a env variable to name images/containers
 
