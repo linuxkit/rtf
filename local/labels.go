@@ -28,12 +28,20 @@ func ParseLabels(labels string) (map[string]bool, map[string]bool) {
 
 // WillRun determines if a group or test should run based on its labels and the RunConfig
 func WillRun(labels, notLabels map[string]bool, config RunConfig) bool {
-	// 2. Check every test label is in the hostLabels
-	for l := range labels {
-		if _, ok := config.Labels[l]; !ok {
+	// 1. If test has labels
+	if len(labels) > 0 {
+		// 2. Check that at least one test label is in the hostLabels
+		matches := 0
+		for l := range labels {
+			if _, ok := config.Labels[l]; ok {
+				matches++
+			}
+		}
+		if matches == 0 {
 			return false
 		}
 	}
+
 	// 3. Check every test notLabel is NOT in the hostLabels
 	for l := range notLabels {
 		if _, ok := config.Labels[l]; ok {
