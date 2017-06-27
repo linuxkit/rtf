@@ -26,12 +26,11 @@ type Group struct {
 	PreTest   string
 	PostTest  string
 	Parent    *Group
-	Order     int
+	order     int
 	Path      string
 	Labels    map[string]bool
 	NotLabels map[string]bool
-	Tests     []*Test
-	Children  []*Group
+	Children  []TestContainer
 }
 
 // Test is a test
@@ -41,7 +40,7 @@ type Test struct {
 	Path      string
 	Command   exec.Cmd
 	Repeat    int
-	Order     int
+	order     int
 	Summary   string
 	Author    string
 	Labels    map[string]bool
@@ -92,3 +91,22 @@ type RunConfig struct {
 	NotLabels   map[string]bool
 	TestPattern string
 }
+
+// A TestContainer is a container that can hold one or more tests
+type TestContainer interface {
+	Order() int
+	List(config RunConfig) []Result
+	Run(config RunConfig) ([]Result, error)
+}
+
+// ByOrder implements the sort.Sorter interface for TestContainer
+type ByOrder []TestContainer
+
+// Len returns the length of the []TestContainer
+func (a ByOrder) Len() int { return len(a) }
+
+// Swap swaps two items in a []TestContainer
+func (a ByOrder) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+
+// Less compares whether the order of i is less than that of j
+func (a ByOrder) Less(i, j int) bool { return a[i].Order() < a[j].Order() }

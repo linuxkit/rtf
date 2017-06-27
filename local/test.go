@@ -60,7 +60,7 @@ func (t *Test) Init() error {
 			t.NotLabels[k] = v
 		}
 	}
-	t.Order = order
+	t.order = order
 	return nil
 }
 
@@ -72,6 +72,23 @@ func (t *Test) Name() string {
 // LabelString returns all labels in a comma separated string
 func (t *Test) LabelString() string {
 	return makeLabelString(t.Labels, t.NotLabels)
+}
+
+// List satisfies the TestContainer interface
+func (t *Test) List(config RunConfig) []Result {
+	if WillRun(t.Labels, t.NotLabels, config) && CheckPattern(t.Name(), config.TestPattern) {
+		return []Result{{
+			Name:    t.Name(),
+			Summary: t.Tags.Summary,
+			Labels:  t.LabelString(),
+		}}
+	}
+	return []Result{{
+		TestResult: Skip,
+		Name:       t.Name(),
+		Summary:    t.Tags.Summary,
+		Labels:     t.LabelString(),
+	}}
 }
 
 // Run runs a test
@@ -140,4 +157,9 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 		results = append(results, res)
 	}
 	return results, nil
+}
+
+// Order returns a tests order
+func (t *Test) Order() int {
+	return t.order
 }

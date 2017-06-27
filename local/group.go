@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -84,7 +85,7 @@ func (g *Group) Init() error {
 	} else {
 		g.Tags.Name = fmt.Sprintf("%s.%s", g.Parent.Name(), name)
 	}
-	g.Order = order
+	g.order = order
 
 	files, err := ioutil.ReadDir(g.Path)
 	if err != nil {
@@ -109,7 +110,7 @@ func (g *Group) Init() error {
 				if err != nil {
 					return err
 				}
-				g.Tests = append(g.Tests, t)
+				g.Children = append(g.Children, t)
 			}
 		}
 	}
@@ -129,6 +130,7 @@ func (g *Group) Name() string {
 // List lists all child groups and tests
 func (g *Group) List(config RunConfig) []Result {
 	result := []Result{}
+	sort.Sort(ByOrder(g.Children))
 
 	if !WillRun(g.Labels, g.NotLabels, config) {
 		return []Result{{
@@ -144,28 +146,13 @@ func (g *Group) List(config RunConfig) []Result {
 		result = append(result, lst...)
 	}
 
-	for _, t := range g.Tests {
-		if WillRun(t.Labels, t.NotLabels, config) && CheckPattern(t.Name(), config.TestPattern) {
-			result = append(result, Result{
-				Name:    t.Name(),
-				Summary: t.Tags.Summary,
-				Labels:  t.LabelString(),
-			})
-		} else {
-			result = append(result, Result{
-				TestResult: Skip,
-				Name:       t.Name(),
-				Summary:    t.Tags.Summary,
-				Labels:     t.LabelString(),
-			})
-		}
-	}
 	return result
 }
 
 // Run will run all child groups and tests
 func (g *Group) Run(config RunConfig) ([]Result, error) {
 	var results []Result
+	sort.Sort(ByOrder(g.Children))
 
 	if !WillRun(g.Labels, g.NotLabels, config) {
 		return []Result{{TestResult: Skip,
@@ -204,13 +191,6 @@ func (g *Group) Run(config RunConfig) ([]Result, error) {
 		}
 		results = append(results, res...)
 	}
-	for _, t := range g.Tests {
-		res, err := t.Run(config)
-		if err != nil {
-			return results, err
-		}
-		results = append(results, res...)
-	}
 
 	if init {
 		config.Logger.Log(logger.LevelInfo, fmt.Sprintf("%s::gdeinit()", g.Name()))
@@ -223,4 +203,9 @@ func (g *Group) Run(config RunConfig) ([]Result, error) {
 		}
 	}
 	return results, nil
+}
+
+// Order returns the order of a group
+func (g *Group) Order() int {
+	return g.order
 }
