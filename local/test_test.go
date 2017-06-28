@@ -13,10 +13,21 @@ func TestFindingTests(t *testing.T) {
 	if err := p.Init(); err != nil {
 		t.Fatal(err)
 	}
+
+	expected := []Result{
+		{Name: "test.osx"},
+		{Name: "test.win"},
+		{Name: "test.apps.test"},
+		{Name: "test.apps.basic.test"},
+		{Name: "test.apps.advanced.test"},
+	}
+
 	config := RunConfig{}
 	l := p.List(config)
-	for _, tst := range l {
-		fmt.Printf("Name: %s Summary: %s WillRun: %d\n", tst.Name, tst.Summary, tst.TestResult)
+	for i, tst := range l {
+		if expected[i].Name != tst.Name {
+			t.Fatalf("Error in test ordering:\n Got %+v\nExpected %+v\n", tst, expected[i])
+		}
 	}
 }
 
