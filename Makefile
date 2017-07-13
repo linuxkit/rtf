@@ -16,7 +16,7 @@ INEFFASSIGN:=$(shell command -v ineffassign 2> /dev/null)
 
 default: rtf
 
-rtf: $(DEPS) lint
+rtf: $(DEPS)
 	go build --ldflags "-X $(CMD_PKG).GitCommit=$(GIT_COMMIT) -X $(CMD_PKG).Version=$(VERSION)" -o $@
 
 .PHONY: lint
@@ -45,7 +45,7 @@ install-deps:
 	go get -u github.com/gordonklaus/ineffassign
 
 .PHONY: test
-test:
+test: rtf lint
 	@go test $(PKGS)
 
 .PHONY: install
