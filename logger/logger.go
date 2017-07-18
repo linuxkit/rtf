@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/fatih/color"
@@ -73,21 +74,28 @@ var LevelNames = map[LogLevel]string{
 
 type logDispatcher struct {
 	Backends map[string]Logger
+	sync.RWMutex
 }
 
 // Log dispatches a Log entry to each backend
 func (d *logDispatcher) Log(level LogLevel, msg string) {
+	d.RLock()
+	defer d.RUnlock()
+	timestamp := time.Now()
 	for _, b := range d.Backends {
-		timestamp := time.Now()
 		b.Log(timestamp, level, msg)
 	}
 }
 
 func (d *logDispatcher) Register(name string, backend Logger) {
+	d.Lock()
+	defer d.Unlock()
 	d.Backends[name] = backend
 }
 
 func (d *logDispatcher) Unregister(name string) {
+	d.Lock()
+	defer d.Unlock()
 	delete(d.Backends, name)
 }
 
