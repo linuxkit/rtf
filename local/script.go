@@ -6,11 +6,35 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/linuxkit/rtf/logger"
 )
+
+var shExecutable = "/bin/sh"
+
+func init() {
+	if runtime.GOOS != "windows" {
+		return
+	}
+
+	// On Windows we need to find bash.exe and *not* pick up the one from WSL
+	pathEnv := os.Getenv("PATH")
+	for _, p := range strings.Split(pathEnv, ";") {
+		t := filepath.Join(p, "bash.exe")
+		if strings.Contains(t, "System32") || strings.Contains(t, "system32") {
+			// This is where the WSL bash.exe lives
+			continue
+		}
+		if _, err := os.Stat(t); err == nil {
+			shExecutable = t
+			break
+		}
+	}
+}
 
 func executeScript(script, cwd, name string, args []string, config RunConfig) (Result, error) {
 	if name == "" {
@@ -24,7 +48,7 @@ func executeScript(script, cwd, name string, args []string, config RunConfig) (R
 	}
 	cmdArgs = append(cmdArgs, script)
 	cmdArgs = append(cmdArgs, args...)
-	cmd := exec.Command("/bin/sh", cmdArgs...)
+	cmd := exec.Command(shExecutable, cmdArgs...)
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -67,6 +91,10 @@ func executeScript(script, cwd, name string, args []string, config RunConfig) (R
 		fmt.Sprintf("PATH=%s:%s", utilsDir, envPath),
 	}
 	cmd.Env = append(osEnv, rtEnv...)
+	if runtime.GOOS == "windows" {
+		cmd.Env = append(cmd.Env, []string{"MSYS_NO_PATHCONV=1"}...)
+	}
+
 	cmd.Dir = cwd
 
 	go func() {
