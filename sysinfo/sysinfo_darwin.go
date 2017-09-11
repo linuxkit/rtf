@@ -14,7 +14,7 @@ var osxVersionMap = map[string]string{
 }
 
 func getPlatformSpecifics(info SystemInfo) SystemInfo {
-	out, err := exec.Command("sw_vers-pver", "sw_vers", "-productVersion").Output()
+	out, err := exec.Command("sw_vers", "-productVersion").Output()
 	if err != nil {
 		info.Name = "UNKNOWN"
 		info.Version = "UNKNOWN"
