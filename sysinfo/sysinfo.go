@@ -14,8 +14,15 @@ type SystemInfo struct {
 // platform specific information
 func GetSystemInfo() SystemInfo {
 	info := SystemInfo{
-		OS:   runtime.GOOS,
 		Arch: runtime.GOARCH,
+	}
+	switch runtime.GOOS {
+	case "darwin":
+		info.OS = "osx"
+	case "windows":
+		info.OS = "win"
+	default:
+		info.OS = runtime.GOOS
 	}
 	return getPlatformSpecifics(info)
 }
@@ -28,11 +35,9 @@ func (s SystemInfo) List() []string {
 		s.Version,
 		s.Arch,
 	}
-	if s.OS == "darwin" {
-		l = append(l, "osx")
-	}
-	if s.OS == "windows" {
-		l = append(l, "win")
+	switch s.OS {
+	case "osx", "win":
+		l = append(l, runtime.GOOS)
 	}
 	return l
 }
