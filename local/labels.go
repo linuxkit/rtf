@@ -57,7 +57,7 @@ func CheckLabel(labels, notLabels map[string]bool, config RunConfig) bool {
 	return true
 }
 
-func makeLabelString(labels map[string]bool, notLabels map[string]bool) string {
+func makeLabelString(labels map[string]bool, notLabels map[string]bool, sep string) string {
 	var l []string
 	for s := range notLabels {
 		l = append(l, fmt.Sprintf("!%s", s))
@@ -65,7 +65,7 @@ func makeLabelString(labels map[string]bool, notLabels map[string]bool) string {
 	for s := range labels {
 		l = append(l, s)
 	}
-	return strings.Join(l, ", ")
+	return strings.Join(l, sep)
 }
 
 func getNameAndOrder(path string) (int, string) {

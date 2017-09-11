@@ -119,7 +119,7 @@ func (g *Group) Init() error {
 
 // LabelString provides all labels in a comma separated list
 func (g *Group) LabelString() string {
-	return makeLabelString(g.Labels, g.NotLabels)
+	return makeLabelString(g.Labels, g.NotLabels, ", ")
 }
 
 // Name returns the name of the group
@@ -175,7 +175,7 @@ func (g *Group) Run(config RunConfig) ([]Result, error) {
 
 	if init {
 		config.Logger.Log(logger.LevelInfo, fmt.Sprintf("%s::ginit()", g.Name()))
-		res, err := executeScript(gfName, g.Path, "", g.LabelString(), []string{"init"}, config)
+		res, err := executeScript(gfName, g.Path, "", []string{"init"}, config)
 		if err != nil {
 			return results, err
 		}
@@ -194,7 +194,7 @@ func (g *Group) Run(config RunConfig) ([]Result, error) {
 
 	if init {
 		config.Logger.Log(logger.LevelInfo, fmt.Sprintf("%s::gdeinit()", g.Name()))
-		res, err := executeScript(gfName, g.Path, "", g.LabelString(), []string{"deinit"}, config)
+		res, err := executeScript(gfName, g.Path, "", []string{"deinit"}, config)
 		if err != nil {
 			return results, err
 		}

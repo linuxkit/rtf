@@ -12,7 +12,7 @@ import (
 	"github.com/linuxkit/rtf/logger"
 )
 
-func executeScript(script, cwd, name, labels string, args []string, config RunConfig) (Result, error) {
+func executeScript(script, cwd, name string, args []string, config RunConfig) (Result, error) {
 	if name == "" {
 		name = "UNKNOWN"
 	}
@@ -50,6 +50,8 @@ func executeScript(script, cwd, name, labels string, args []string, config RunCo
 	if err != nil {
 		return Result{}, err
 	}
+
+	labels := makeLabelString(config.Labels, config.NotLabels, ":")
 
 	envPath := os.Getenv("PATH")
 	rtEnv := []string{

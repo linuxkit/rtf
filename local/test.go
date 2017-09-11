@@ -72,7 +72,7 @@ func (t *Test) Name() string {
 
 // LabelString returns all labels in a comma separated string
 func (t *Test) LabelString() string {
-	return makeLabelString(t.Labels, t.NotLabels)
+	return makeLabelString(t.Labels, t.NotLabels, ", ")
 }
 
 // List satisfies the TestContainer interface
@@ -128,7 +128,7 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 		defer config.Logger.Unregister(logFileName)
 
 		if t.Parent.PreTest != "" {
-			res, err := executeScript(t.Parent.PreTest, t.Path, name, t.LabelString(), []string{name}, config)
+			res, err := executeScript(t.Parent.PreTest, t.Path, name, []string{name}, config)
 			if res.TestResult != Pass {
 				return results, fmt.Errorf("Error running: %s. %s", t.Parent.PreTest, err.Error())
 			}
@@ -136,7 +136,7 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 		// Run the test
 		config.Logger.Log(logger.LevelInfo, fmt.Sprintf("Running Test %s in %s", name, t.Path))
 		tf := filepath.Join(t.Path, TestFile)
-		res, err := executeScript(tf, t.Path, name, t.LabelString(), nil, config)
+		res, err := executeScript(tf, t.Path, name, nil, config)
 		if err != nil {
 			return results, err
 		}
@@ -149,7 +149,7 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 			config.Logger.Log(logger.LevelCancel, fmt.Sprintf("%s %.2fs", res.Name, res.Duration.Seconds()))
 		}
 		if t.Parent.PostTest != "" {
-			res, err := executeScript(t.Parent.PostTest, t.Path, name, t.LabelString(), []string{name, fmt.Sprintf("%d", res.TestResult)}, config)
+			res, err := executeScript(t.Parent.PostTest, t.Path, name, []string{name, fmt.Sprintf("%d", res.TestResult)}, config)
 			if res.TestResult != Pass {
 				return results, fmt.Errorf("Error running: %s. %s", t.Parent.PreTest, err.Error())
 			}
