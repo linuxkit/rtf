@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/linuxkit/rtf/logger"
 )
@@ -76,18 +77,18 @@ func (t *Test) LabelString() string {
 
 // List satisfies the TestContainer interface
 func (t *Test) List(config RunConfig) []Result {
-	if WillRun(t.Labels, t.NotLabels, config) && CheckPattern(t.Name(), config.TestPattern) {
+	if !t.willRun(config) {
 		return []Result{{
-			Name:    t.Name(),
-			Summary: t.Tags.Summary,
-			Labels:  t.LabelString(),
+			TestResult: Skip,
+			Name:       t.Name(),
+			Summary:    t.Tags.Summary,
+			Labels:     t.LabelString(),
 		}}
 	}
 	return []Result{{
-		TestResult: Skip,
-		Name:       t.Name(),
-		Summary:    t.Tags.Summary,
-		Labels:     t.LabelString(),
+		Name:    t.Name(),
+		Summary: t.Tags.Summary,
+		Labels:  t.LabelString(),
 	}}
 }
 
@@ -96,8 +97,7 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 	var results []Result
 	appendIteration := false
 
-	// NAND WillRun CheckPattern
-	if !(WillRun(t.Labels, t.NotLabels, config) && CheckPattern(t.Name(), config.TestPattern)) {
+	if !t.willRun(config) {
 		config.Logger.Log(logger.LevelSkip, fmt.Sprintf("%s %.2fs", t.Name(), 0.0))
 		return []Result{{TestResult: Skip,
 			Name: t.Name(),
@@ -162,4 +162,14 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 // Order returns a tests order
 func (t *Test) Order() int {
 	return t.order
+}
+
+// willRun determines if the test should be run based on labels and runtime config.
+func (t *Test) willRun(config RunConfig) bool {
+	if !CheckLabel(t.Labels, t.NotLabels, config) {
+		return false
+	}
+
+	// HasPrefix matches on "" for config.TestPattern
+	return strings.HasPrefix(t.Name(), config.TestPattern)
 }

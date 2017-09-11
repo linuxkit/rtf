@@ -132,7 +132,7 @@ func (g *Group) List(config RunConfig) []Result {
 	result := []Result{}
 	sort.Sort(ByOrder(g.Children))
 
-	if !WillRun(g.Labels, g.NotLabels, config) {
+	if !g.willRun(config) {
 		return []Result{{
 			TestResult: Skip,
 			Name:       g.Name(),
@@ -154,7 +154,7 @@ func (g *Group) Run(config RunConfig) ([]Result, error) {
 	var results []Result
 	sort.Sort(ByOrder(g.Children))
 
-	if !WillRun(g.Labels, g.NotLabels, config) {
+	if !g.willRun(config) {
 		return []Result{{TestResult: Skip,
 			Name:      g.Name(),
 			StartTime: time.Now(),
@@ -208,4 +208,17 @@ func (g *Group) Run(config RunConfig) ([]Result, error) {
 // Order returns the order of a group
 func (g *Group) Order() int {
 	return g.order
+}
+
+// willRun determines if tests from this group should be run based on labels and runtime config.
+func (g *Group) willRun(config RunConfig) bool {
+	if !CheckLabel(g.Labels, g.NotLabels, config) {
+		return false
+	}
+
+	if config.TestPattern == "" {
+		return true
+	}
+
+	return strings.HasPrefix(config.TestPattern, g.Name()) || strings.HasPrefix(g.Name(), config.TestPattern)
 }
