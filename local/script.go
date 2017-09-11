@@ -36,13 +36,15 @@ func executeScript(script, cwd, name, labels string, args []string, config RunCo
 	}
 
 	osEnv := os.Environ()
-	goPath := os.Getenv("GOPATH")
-	libDir := filepath.Join(goPath, "src", "github.com", "linuxkit", "rtf", "lib", "lib.sh")
-	utilsDir := filepath.Join(goPath, "src", "github.com", "linuxkit", "rtf", "bin")
-	currentDir, err := os.Getwd()
-	if err != nil {
-		return Result{}, err
+
+	rootDir := os.Getenv("RT_ROOT")
+	if rootDir == "" {
+		// Assume the source is in the GOPATH
+		goPath := os.Getenv("GOPATH")
+		rootDir = filepath.Join(goPath, "src", "github.com", "linuxkit", "rtf")
 	}
+	libDir := filepath.Join(rootDir, "lib", "lib.sh")
+	utilsDir := filepath.Join(rootDir, "bin")
 
 	projectDir, err := filepath.Abs(config.CaseDir)
 	if err != nil {
@@ -51,7 +53,7 @@ func executeScript(script, cwd, name, labels string, args []string, config RunCo
 
 	envPath := os.Getenv("PATH")
 	rtEnv := []string{
-		fmt.Sprintf("RT_ROOT=%s", currentDir),
+		fmt.Sprintf("RT_ROOT=%s", rootDir),
 		fmt.Sprintf("RT_UTILS=%s", utilsDir),
 		fmt.Sprintf("RT_PROJECT_ROOT=%s", projectDir),
 		fmt.Sprintf("RT_OS=%s", config.SystemInfo.OS),
