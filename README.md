@@ -46,6 +46,9 @@ choco install git
 The regression test framework allows running tests on a local host (or
 inside a VM) as well as against a suitably configured remote host.
 
+If you don't have the source code in your `GOPATH`, you may have to
+set the `RT_ROOT` environment variable to point to it.
+
 To run tests locally, simply execute the `rtf run` command. It will
 executed all the test cases in the supplied cases directory. This
 defaults to `./cases`

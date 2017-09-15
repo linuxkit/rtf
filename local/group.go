@@ -119,7 +119,7 @@ func (g *Group) Init() error {
 
 // LabelString provides all labels in a comma separated list
 func (g *Group) LabelString() string {
-	return makeLabelString(g.Labels, g.NotLabels)
+	return makeLabelString(g.Labels, g.NotLabels, ", ")
 }
 
 // Name returns the name of the group
@@ -132,7 +132,7 @@ func (g *Group) List(config RunConfig) []Result {
 	result := []Result{}
 	sort.Sort(ByOrder(g.Children))
 
-	if !WillRun(g.Labels, g.NotLabels, config) {
+	if !g.willRun(config) {
 		return []Result{{
 			TestResult: Skip,
 			Name:       g.Name(),
@@ -154,7 +154,7 @@ func (g *Group) Run(config RunConfig) ([]Result, error) {
 	var results []Result
 	sort.Sort(ByOrder(g.Children))
 
-	if !WillRun(g.Labels, g.NotLabels, config) {
+	if !g.willRun(config) {
 		return []Result{{TestResult: Skip,
 			Name:      g.Name(),
 			StartTime: time.Now(),
@@ -175,7 +175,7 @@ func (g *Group) Run(config RunConfig) ([]Result, error) {
 
 	if init {
 		config.Logger.Log(logger.LevelInfo, fmt.Sprintf("%s::ginit()", g.Name()))
-		res, err := executeScript(gfName, g.Path, "", g.LabelString(), []string{"init"}, config)
+		res, err := executeScript(gfName, g.Path, "", []string{"init"}, config)
 		if err != nil {
 			return results, err
 		}
@@ -194,7 +194,7 @@ func (g *Group) Run(config RunConfig) ([]Result, error) {
 
 	if init {
 		config.Logger.Log(logger.LevelInfo, fmt.Sprintf("%s::gdeinit()", g.Name()))
-		res, err := executeScript(gfName, g.Path, "", g.LabelString(), []string{"deinit"}, config)
+		res, err := executeScript(gfName, g.Path, "", []string{"deinit"}, config)
 		if err != nil {
 			return results, err
 		}
@@ -208,4 +208,17 @@ func (g *Group) Run(config RunConfig) ([]Result, error) {
 // Order returns the order of a group
 func (g *Group) Order() int {
 	return g.order
+}
+
+// willRun determines if tests from this group should be run based on labels and runtime config.
+func (g *Group) willRun(config RunConfig) bool {
+	if !CheckLabel(g.Labels, g.NotLabels, config) {
+		return false
+	}
+
+	if config.TestPattern == "" {
+		return true
+	}
+
+	return strings.HasPrefix(config.TestPattern, g.Name()) || strings.HasPrefix(g.Name(), config.TestPattern)
 }

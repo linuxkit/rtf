@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/linuxkit/rtf/logger"
 )
@@ -71,23 +72,23 @@ func (t *Test) Name() string {
 
 // LabelString returns all labels in a comma separated string
 func (t *Test) LabelString() string {
-	return makeLabelString(t.Labels, t.NotLabels)
+	return makeLabelString(t.Labels, t.NotLabels, ", ")
 }
 
 // List satisfies the TestContainer interface
 func (t *Test) List(config RunConfig) []Result {
-	if WillRun(t.Labels, t.NotLabels, config) && CheckPattern(t.Name(), config.TestPattern) {
+	if !t.willRun(config) {
 		return []Result{{
-			Name:    t.Name(),
-			Summary: t.Tags.Summary,
-			Labels:  t.LabelString(),
+			TestResult: Skip,
+			Name:       t.Name(),
+			Summary:    t.Tags.Summary,
+			Labels:     t.LabelString(),
 		}}
 	}
 	return []Result{{
-		TestResult: Skip,
-		Name:       t.Name(),
-		Summary:    t.Tags.Summary,
-		Labels:     t.LabelString(),
+		Name:    t.Name(),
+		Summary: t.Tags.Summary,
+		Labels:  t.LabelString(),
 	}}
 }
 
@@ -96,8 +97,7 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 	var results []Result
 	appendIteration := false
 
-	// NAND WillRun CheckPattern
-	if !(WillRun(t.Labels, t.NotLabels, config) && CheckPattern(t.Name(), config.TestPattern)) {
+	if !t.willRun(config) {
 		config.Logger.Log(logger.LevelSkip, fmt.Sprintf("%s %.2fs", t.Name(), 0.0))
 		return []Result{{TestResult: Skip,
 			Name: t.Name(),
@@ -128,7 +128,7 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 		defer config.Logger.Unregister(logFileName)
 
 		if t.Parent.PreTest != "" {
-			res, err := executeScript(t.Parent.PreTest, t.Path, name, t.LabelString(), []string{name}, config)
+			res, err := executeScript(t.Parent.PreTest, t.Path, name, []string{name}, config)
 			if res.TestResult != Pass {
 				return results, fmt.Errorf("Error running: %s. %s", t.Parent.PreTest, err.Error())
 			}
@@ -136,7 +136,7 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 		// Run the test
 		config.Logger.Log(logger.LevelInfo, fmt.Sprintf("Running Test %s in %s", name, t.Path))
 		tf := filepath.Join(t.Path, TestFile)
-		res, err := executeScript(tf, t.Path, name, t.LabelString(), nil, config)
+		res, err := executeScript(tf, t.Path, name, nil, config)
 		if err != nil {
 			return results, err
 		}
@@ -149,7 +149,7 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 			config.Logger.Log(logger.LevelCancel, fmt.Sprintf("%s %.2fs", res.Name, res.Duration.Seconds()))
 		}
 		if t.Parent.PostTest != "" {
-			res, err := executeScript(t.Parent.PostTest, t.Path, name, t.LabelString(), []string{name, fmt.Sprintf("%d", res.TestResult)}, config)
+			res, err := executeScript(t.Parent.PostTest, t.Path, name, []string{name, fmt.Sprintf("%d", res.TestResult)}, config)
 			if res.TestResult != Pass {
 				return results, fmt.Errorf("Error running: %s. %s", t.Parent.PreTest, err.Error())
 			}
@@ -162,4 +162,14 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 // Order returns a tests order
 func (t *Test) Order() int {
 	return t.order
+}
+
+// willRun determines if the test should be run based on labels and runtime config.
+func (t *Test) willRun(config RunConfig) bool {
+	if !CheckLabel(t.Labels, t.NotLabels, config) {
+		return false
+	}
+
+	// HasPrefix matches on "" for config.TestPattern
+	return strings.HasPrefix(t.Name(), config.TestPattern)
 }

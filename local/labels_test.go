@@ -20,7 +20,7 @@ func TestParseLabels(t *testing.T) {
 	}
 }
 
-func TestWillRun(t *testing.T) {
+func TestCheckLabel(t *testing.T) {
 
 	darwin := map[string]bool{"darwin": true}
 	linux := map[string]bool{"linux": true}
@@ -29,27 +29,27 @@ func TestWillRun(t *testing.T) {
 	darwinUser := RunConfig{Labels: darwin}
 	linuxUser := RunConfig{Labels: linux}
 
-	if !WillRun(nil, nil, RunConfig{}) {
+	if !CheckLabel(nil, nil, RunConfig{}) {
 		t.Fatalf("Test with no labels on host with no labels doesn't run")
 	}
 
-	if !WillRun(nil, nil, darwinUser) {
+	if !CheckLabel(nil, nil, darwinUser) {
 		t.Fatalf("Test with no labels doesn't run!")
 	}
 
-	if !WillRun(darwin, nil, darwinUser) {
+	if !CheckLabel(darwin, nil, darwinUser) {
 		t.Fatalf("Darwin test doesn't run for darwin user")
 	}
 
-	if !WillRun(linux, nil, linuxUser) {
+	if !CheckLabel(linux, nil, linuxUser) {
 		t.Fatalf("Linux test doesn't run for linux user")
 	}
 
-	if WillRun(darwin, nil, linuxUser) {
+	if CheckLabel(darwin, nil, linuxUser) {
 		t.Fatalf("Darwin test runs for linuxUser")
 	}
 
-	if !WillRun(both, nil, darwinUser) {
+	if !CheckLabel(both, nil, darwinUser) {
 		t.Fatalf("Test on darwin/linux doesn't run for darwin user")
 	}
 }

@@ -6,13 +6,37 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/linuxkit/rtf/logger"
 )
 
-func executeScript(script, cwd, name, labels string, args []string, config RunConfig) (Result, error) {
+var shExecutable = "/bin/sh"
+
+func init() {
+	if runtime.GOOS != "windows" {
+		return
+	}
+
+	// On Windows we need to find bash.exe and *not* pick up the one from WSL
+	pathEnv := os.Getenv("PATH")
+	for _, p := range strings.Split(pathEnv, ";") {
+		t := filepath.Join(p, "bash.exe")
+		if strings.Contains(t, "System32") || strings.Contains(t, "system32") {
+			// This is where the WSL bash.exe lives
+			continue
+		}
+		if _, err := os.Stat(t); err == nil {
+			shExecutable = t
+			break
+		}
+	}
+}
+
+func executeScript(script, cwd, name string, args []string, config RunConfig) (Result, error) {
 	if name == "" {
 		name = "UNKNOWN"
 	}
@@ -24,7 +48,7 @@ func executeScript(script, cwd, name, labels string, args []string, config RunCo
 	}
 	cmdArgs = append(cmdArgs, script)
 	cmdArgs = append(cmdArgs, args...)
-	cmd := exec.Command("/bin/sh", cmdArgs...)
+	cmd := exec.Command(shExecutable, cmdArgs...)
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -36,22 +60,26 @@ func executeScript(script, cwd, name, labels string, args []string, config RunCo
 	}
 
 	osEnv := os.Environ()
-	goPath := os.Getenv("GOPATH")
-	libDir := filepath.Join(goPath, "src", "github.com", "linuxkit", "rtf", "lib", "lib.sh")
-	utilsDir := filepath.Join(goPath, "src", "github.com", "linuxkit", "rtf", "bin")
-	currentDir, err := os.Getwd()
-	if err != nil {
-		return Result{}, err
+
+	rootDir := os.Getenv("RT_ROOT")
+	if rootDir == "" {
+		// Assume the source is in the GOPATH
+		goPath := os.Getenv("GOPATH")
+		rootDir = filepath.Join(goPath, "src", "github.com", "linuxkit", "rtf")
 	}
+	libDir := filepath.Join(rootDir, "lib", "lib.sh")
+	utilsDir := filepath.Join(rootDir, "bin")
 
 	projectDir, err := filepath.Abs(config.CaseDir)
 	if err != nil {
 		return Result{}, err
 	}
 
+	labels := makeLabelString(config.Labels, config.NotLabels, ":")
+
 	envPath := os.Getenv("PATH")
 	rtEnv := []string{
-		fmt.Sprintf("RT_ROOT=%s", currentDir),
+		fmt.Sprintf("RT_ROOT=%s", rootDir),
 		fmt.Sprintf("RT_UTILS=%s", utilsDir),
 		fmt.Sprintf("RT_PROJECT_ROOT=%s", projectDir),
 		fmt.Sprintf("RT_OS=%s", config.SystemInfo.OS),
@@ -63,6 +91,10 @@ func executeScript(script, cwd, name, labels string, args []string, config RunCo
 		fmt.Sprintf("PATH=%s:%s", utilsDir, envPath),
 	}
 	cmd.Env = append(osEnv, rtEnv...)
+	if runtime.GOOS == "windows" {
+		cmd.Env = append(cmd.Env, []string{"MSYS_NO_PATHCONV=1"}...)
+	}
+
 	cmd.Dir = cwd
 
 	go func() {

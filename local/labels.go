@@ -26,8 +26,8 @@ func ParseLabels(labels string) (map[string]bool, map[string]bool) {
 	return set, unSet
 }
 
-// WillRun determines if a group or test should run based on its labels and the RunConfig
-func WillRun(labels, notLabels map[string]bool, config RunConfig) bool {
+// CheckLabel determines if a group or test should run based on its labels and the RunConfig
+func CheckLabel(labels, notLabels map[string]bool, config RunConfig) bool {
 	// 1. If test has labels
 	if len(labels) > 0 {
 		// 2. Check that at least one test label is in the hostLabels
@@ -57,16 +57,7 @@ func WillRun(labels, notLabels map[string]bool, config RunConfig) bool {
 	return true
 }
 
-// CheckPattern implements a test to see if a given name matches the provided pattern
-func CheckPattern(name, pattern string) bool {
-	// 1. Check that name begins with the TestPattern
-	if !strings.HasPrefix(name, pattern) {
-		return false
-	}
-	return true
-}
-
-func makeLabelString(labels map[string]bool, notLabels map[string]bool) string {
+func makeLabelString(labels map[string]bool, notLabels map[string]bool, sep string) string {
 	var l []string
 	for s := range notLabels {
 		l = append(l, fmt.Sprintf("!%s", s))
@@ -74,7 +65,7 @@ func makeLabelString(labels map[string]bool, notLabels map[string]bool) string {
 	for s := range labels {
 		l = append(l, s)
 	}
-	return strings.Join(l, ", ")
+	return strings.Join(l, sep)
 }
 
 func getNameAndOrder(path string) (int, string) {
