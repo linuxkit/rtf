@@ -1,4 +1,4 @@
-VERSION="0.0" # dummy for now
+VERSION=0.0
 GIT_COMMIT=$(shell git rev-list -1 HEAD)
 CMD_PKG=github.com/linuxkit/rtf/cmd
 PKGS:=$(shell go list ./... | grep -v vendor)
@@ -23,6 +23,8 @@ PREFIX?=/usr/local
 GOLINT:=$(shell command -v golint 2> /dev/null)
 INEFFASSIGN:=$(shell command -v ineffassign 2> /dev/null)
 
+LDFLAGS=-X $(CMD_PKG).GitCommit=$(GIT_COMMIT) -X $(CMD_PKG).Version=$(VERSION)
+
 default: rtf
 
 # Build with docker
@@ -33,12 +35,12 @@ build-with-docker: tmp_rtf_bin.tar
 	rm $<
 
 tmp_rtf_bin.tar: $(DEPS)
-	tar cf - . | docker run --rm --net=none --log-driver=none -i $(CROSS) $(GO_COMPILE) --package github.com/linuxkit/rtf --ldflags "-X main.GitCommit=$(GIT_COMMIT) -X main.Version=$(VERSION)" -o rtf > $@
+	tar cf - . | docker run --rm --net=none --log-driver=none -i $(CROSS) $(GO_COMPILE) --package github.com/linuxkit/rtf --ldflags "$(LDFLAGS)" -o rtf > $@
 
 
 # Build local (default)
 rtf: $(DEPS)
-	go build --ldflags "-X $(CMD_PKG).GitCommit=$(GIT_COMMIT) -X $(CMD_PKG).Version=$(VERSION)" -o $@
+	go build --ldflags "$(LDFLAGS)" -o $@
 
 .PHONY: lint
 lint:
@@ -72,6 +74,16 @@ test: rtf lint
 .PHONY: install
 install: rtf
 	cp -a $^ $(PREFIX)/bin/
+
+.PHONY: docker-image
+docker-image: $(DEPS) Dockerfile
+	docker build --build-arg LDFLAGS="$(LDFLAGS)" -t linuxkit/rtf:$(GIT_COMMIT) .
+
+.PHONY: push
+push: docker-image
+	docker tag linuxkit/rtf:$(GIT_COMMIT) linuxkt/rtf:latest
+	docker push linuxkit/rtf:$(GIT_COMMIT)
+	docker push linuxkit/rtf:latest
 
 .PHONY: clean
 clean:
