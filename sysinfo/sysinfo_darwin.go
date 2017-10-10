@@ -11,6 +11,7 @@ var osxVersionMap = map[string]string{
 	"10.10": "OS X Yosemite",
 	"10.11": "OS X El Capitan",
 	"10.12": "macOS Sierra",
+	"10.13": "macOS High Sierra",
 }
 
 func getPlatformSpecifics(info SystemInfo) SystemInfo {
@@ -21,10 +22,15 @@ func getPlatformSpecifics(info SystemInfo) SystemInfo {
 		return info
 	}
 	info.Version = strings.TrimSpace(string(out))
-	var ok bool
-	info.Name, ok = osxVersionMap[info.Version]
-	if !ok {
-		info.Version = "UNKNOWN"
-	}
+	info.Name = resolveNameFromVersion(info.Version)
 	return info
+}
+
+func resolveNameFromVersion(version string) string {
+	for k, v := range osxVersionMap {
+		if strings.HasPrefix(version, k) {
+			return v
+		}
+	}
+	return "UNKNOWN"
 }
