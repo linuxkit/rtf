@@ -151,7 +151,7 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 		if t.Parent.PostTest != "" {
 			res, err := executeScript(t.Parent.PostTest, t.Path, name, []string{name, fmt.Sprintf("%d", res.TestResult)}, config)
 			if res.TestResult != Pass {
-				return results, fmt.Errorf("Error running: %s. %s", t.Parent.PreTest, err.Error())
+				return results, fmt.Errorf("Error running: %s. %s", t.Parent.PostTest, err.Error())
 			}
 		}
 		results = append(results, res)
