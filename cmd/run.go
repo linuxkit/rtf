@@ -61,6 +61,11 @@ var (
 	}
 )
 
+var (
+	resultDir  string
+	extra      bool
+)
+
 var runCmd = &cobra.Command{
 	Use:   "run [test pattern]",
 	Short: "Run test cases",
@@ -68,6 +73,9 @@ var runCmd = &cobra.Command{
 }
 
 func init() {
+	flags := runCmd.LocalFlags()
+	flags.StringVarP(&resultDir, "resultdir", "r", "_results", "Directory to place results in")
+	flags.BoolVarP(&extra, "extra", "x", false, "Add extra debug info to log files")
 	RootCmd.AddCommand(runCmd)
 }
 

@@ -24,11 +24,7 @@ import (
 
 var (
 	caseDir    string
-	resultDir  string
 	labels     string
-	envVars    []string
-	extra      bool
-	loggerAddr string
 	verbose    int
 )
 
@@ -52,13 +48,10 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	RootCmd.PersistentFlags().StringVarP(&caseDir, "casedir", "c", "cases", "Directory containing cases")
-	RootCmd.PersistentFlags().StringVarP(&resultDir, "resultdir", "r", "_results", "Directory to place results in")
-	RootCmd.PersistentFlags().StringVarP(&labels, "labels", "l", "", "Labels to apply (comma separated)")
-	RootCmd.PersistentFlags().StringSliceVarP(&envVars, "envVars", "e", []string{}, "Add a environment variable (multiple uses allowed)")
-	RootCmd.PersistentFlags().BoolVarP(&extra, "extra", "x", false, "Add extra debug info to log files")
-	RootCmd.PersistentFlags().StringVar(&loggerAddr, "logger", "", "<host>:<port> of a socket to log stdout to")
-	RootCmd.PersistentFlags().CountVarP(&verbose, "verbose", "v", "Increase verbosity level")
+	flags := RootCmd.PersistentFlags()
+	flags.StringVarP(&caseDir, "casedir", "c", "cases", "Directory containing cases")
+	flags.StringVarP(&labels, "labels", "l", "", "Labels to apply (comma separated)")
+	flags.CountVarP(&verbose, "verbose", "v", "Increase verbosity level")
 }
 
 // initConfig reads in config file and ENV variables if set.
