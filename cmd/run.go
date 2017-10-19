@@ -34,6 +34,7 @@ const (
 	testsCsvName   = "TESTS.CSV"
 	summaryCsvName = "SUMMARY.CSV"
 	testsLogName   = "TESTS.log"
+	latestResults  = "latest"
 )
 
 var (
@@ -106,20 +107,13 @@ func run(cmd *cobra.Command, args []string) error {
 
 	id := uuid.Generate()
 	fmt.Printf("ID: %s\n", id)
-	baseDir, err := filepath.Abs(filepath.Join(resultDir, id.String()))
+	baseDir, err := setupResultsDirectory(id.String())
 	if err != nil {
 		return err
 	}
 	testsLogPath := filepath.Join(baseDir, testsLogName)
 	testsCsvPath := filepath.Join(baseDir, testsCsvName)
 	summaryCsvPath := filepath.Join(baseDir, summaryCsvName)
-
-	_, err = os.Stat(baseDir)
-	if os.IsNotExist(err) {
-		if err = os.MkdirAll(baseDir, 0755); err != nil {
-			return err
-		}
-	}
 
 	tf, err := os.Create(testsCsvPath)
 	if err != nil {
@@ -240,4 +234,32 @@ func run(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("Some tests failed")
 	}
 	return nil
+}
+
+func setupResultsDirectory(id string) (string, error) {
+	baseDir, err := filepath.Abs(filepath.Join(resultDir, id))
+	if err != nil {
+		return "", err
+	}
+
+	_, err = os.Stat(baseDir)
+	if os.IsNotExist(err) {
+		if err := os.MkdirAll(baseDir, 0755); err != nil {
+			return "", err
+		}
+	}
+
+	linkPath := filepath.Join(resultDir, latestResults)
+	_, err = os.Lstat(linkPath)
+	if err == nil {
+		if err := os.Remove(linkPath); err != nil {
+			return "", err
+		}
+	}
+
+	if err := os.Symlink(baseDir, linkPath); err != nil {
+		return "", err
+	}
+
+	return baseDir, nil
 }
