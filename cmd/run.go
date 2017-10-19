@@ -61,10 +61,9 @@ var (
 	}
 )
 
-// listCmd represents the list command
 var runCmd = &cobra.Command{
 	Use:   "run [test pattern]",
-	Short: "A brief description of your command",
+	Short: "Run test cases",
 	RunE:  run,
 }
 

@@ -24,10 +24,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// listCmd represents the list command
 var infoCmd = &cobra.Command{
 	Use:   "info",
-	Short: "A brief description of your command",
+	Short: "Print test cases and their descriptions",
 	RunE:  info,
 }
 
@@ -36,13 +35,9 @@ func init() {
 }
 
 func info(cmd *cobra.Command, args []string) error {
-	//blue := color.New(color.FgBlue).SprintFunc()
-
 	if len(args) > 1 {
 		return fmt.Errorf("Expected only one test pattern")
 	}
-
-	//a := strings.Join(args, "")
 
 	systemInfo := sysinfo.GetSystemInfo()
 	l, nl := local.ParseLabels(labels)

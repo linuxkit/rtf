@@ -35,7 +35,7 @@ var (
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
 	Use:           os.Args[0],
-	Short:         "Run or provide information about local regression tests",
+	Short:         "Regression testing framework",
 	SilenceErrors: true,
 	SilenceUsage:  true,
 }
@@ -52,9 +52,6 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	// Here you will define your flags and configuration settings.
-	// Cobra supports Persistent Flags, which, if defined here,
-	// will be global for your application.
 	RootCmd.PersistentFlags().StringVarP(&caseDir, "casedir", "c", "cases", "Directory containing cases")
 	RootCmd.PersistentFlags().StringVarP(&resultDir, "resultdir", "r", "_results", "Directory to place results in")
 	RootCmd.PersistentFlags().StringVarP(&labels, "labels", "l", "", "Labels to apply (comma separated)")
