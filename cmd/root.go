@@ -23,9 +23,9 @@ import (
 )
 
 var (
-	caseDir    string
-	labels     string
-	verbose    int
+	caseDir string
+	labels  string
+	verbose int
 )
 
 // RootCmd represents the base command when called without any subcommands

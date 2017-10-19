@@ -17,12 +17,10 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"strings"
 	"text/tabwriter"
 
 	"github.com/fatih/color"
 	"github.com/linuxkit/rtf/local"
-	"github.com/linuxkit/rtf/sysinfo"
 	"github.com/spf13/cobra"
 )
 
@@ -37,43 +35,27 @@ func init() {
 	RootCmd.AddCommand(listCmd)
 }
 
-func list(cmd *cobra.Command, args []string) error {
+func list(_ *cobra.Command, args []string) error {
 	// FIXME: Colors appear to confuse the TabWriter
 	green := color.New(color.FgGreen).SprintFunc()
 	yellow := color.New(color.FgYellow).SprintFunc()
 
-	if len(args) > 1 {
-		return fmt.Errorf("Expected only one test pattern")
-	}
-
-	pattern := strings.Join(args, "")
-
-	systemInfo := sysinfo.GetSystemInfo()
-	l, nl := local.ParseLabels(labels)
-	for _, v := range systemInfo.List() {
-		if _, ok := l[v]; !ok {
-			l[v] = true
-		}
-	}
-	p, err := local.NewProject(caseDir)
+	pattern, err := local.ValidatePattern(args)
 	if err != nil {
 		return err
 	}
-	if err := p.Init(); err != nil {
+	config := local.NewRunConfig(labels, pattern)
+
+	p, err := local.InitNewProject(caseDir)
+	if err != nil {
 		return err
 	}
 
 	w := new(tabwriter.Writer)
 	w.Init(os.Stdout, 0, 8, 0, '\t', 0)
 
-	config := local.RunConfig{
-		TestPattern: pattern,
-		Labels:      l,
-		NotLabels:   nl,
-	}
-
 	lst := p.List(config)
-	fmt.Fprintf(w, "STATE\tTEST\tLABELS\n")
+	fmt.Fprint(w, "STATE\tTEST\tLABELS\n")
 	for _, t := range lst {
 		var state string
 		if t.TestResult == local.Skip {
