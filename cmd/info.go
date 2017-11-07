@@ -20,14 +20,12 @@ import (
 	"text/tabwriter"
 
 	"github.com/linuxkit/rtf/local"
-	"github.com/linuxkit/rtf/sysinfo"
 	"github.com/spf13/cobra"
 )
 
-// listCmd represents the list command
 var infoCmd = &cobra.Command{
 	Use:   "info",
-	Short: "A brief description of your command",
+	Short: "Print test cases and their descriptions",
 	RunE:  info,
 }
 
@@ -35,38 +33,15 @@ func init() {
 	RootCmd.AddCommand(infoCmd)
 }
 
-func info(cmd *cobra.Command, args []string) error {
-	//blue := color.New(color.FgBlue).SprintFunc()
-
-	if len(args) > 1 {
-		return fmt.Errorf("Expected only one test pattern")
-	}
-
-	//a := strings.Join(args, "")
-
-	systemInfo := sysinfo.GetSystemInfo()
-	l, nl := local.ParseLabels(labels)
-	for _, v := range systemInfo.List() {
-		if _, ok := l[v]; !ok {
-			l[v] = true
-		}
-	}
-	p, err := local.NewProject(caseDir)
+func info(_ *cobra.Command, _ []string) error {
+	config := local.NewRunConfig(labels, "")
+	p, err := local.InitNewProject(caseDir)
 	if err != nil {
-		return err
-	}
-
-	if err := p.Init(); err != nil {
 		return err
 	}
 
 	w := new(tabwriter.Writer)
 	w.Init(os.Stdout, 0, 8, 0, '\t', 0)
-
-	config := local.RunConfig{
-		Labels:    l,
-		NotLabels: nl,
-	}
 
 	lst := p.List(config)
 	fmt.Fprintf(w, "NAME\tDESCRIPTION\n")

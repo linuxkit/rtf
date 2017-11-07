@@ -26,6 +26,15 @@ func NewProject(path string) (*Group, error) {
 	return g, nil
 }
 
+// InitNewProject creates a new Group, and calls Init() on it
+func InitNewProject(path string) (*Group, error) {
+	group, err := NewProject(path)
+	if err != nil {
+		return group, err
+	}
+	return group, group.Init()
+}
+
 // NewGroup creates a new Group with the given parent and path
 func NewGroup(parent *Group, path string) (*Group, error) {
 	g := &Group{Parent: parent, Path: path, PreTest: parent.PreTest, PostTest: parent.PostTest}

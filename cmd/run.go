@@ -61,48 +61,45 @@ var (
 	}
 )
 
-// listCmd represents the list command
+var (
+	resultDir string
+	extra     bool
+)
+
 var runCmd = &cobra.Command{
 	Use:   "run [test pattern]",
-	Short: "A brief description of your command",
+	Short: "Run test cases",
 	RunE:  run,
 }
 
 func init() {
+	flags := runCmd.LocalFlags()
+	flags.StringVarP(&resultDir, "resultdir", "r", "_results", "Directory to place results in")
+	flags.BoolVarP(&extra, "extra", "x", false, "Add extra debug info to log files")
 	RootCmd.AddCommand(runCmd)
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	if len(args) > 1 {
-		return fmt.Errorf("Expected only one test pattern")
-	}
-
-	pattern := strings.Join(args, "")
-
-	systemInfo := sysinfo.GetSystemInfo()
-	l, nl := local.ParseLabels(labels)
-	for _, v := range systemInfo.List() {
-		if _, ok := l[v]; !ok {
-			l[v] = true
-		}
-	}
-
-	var labelList []string
-	for k := range l {
-		labelList = append(labelList, k)
-	}
-	for k := range nl {
-		labelList = append(labelList, "!"+k)
-	}
-	fmt.Printf("LABELS: %s\n", strings.Join(labelList, ", "))
-
-	p, err := local.NewProject(caseDir)
+	pattern, err := local.ValidatePattern(args)
 	if err != nil {
 		return err
 	}
-	if err := p.Init(); err != nil {
+	runConfig := local.NewRunConfig(labels, pattern)
+	runConfig.Extra = extra
+
+	p, err := local.InitNewProject(caseDir)
+	if err != nil {
 		return err
 	}
+
+	var labelList []string
+	for k := range runConfig.Labels {
+		labelList = append(labelList, k)
+	}
+	for k := range runConfig.NotLabels {
+		labelList = append(labelList, "!"+k)
+	}
+	fmt.Printf("LABELS: %s\n", strings.Join(labelList, ", "))
 
 	id := uuid.Generate()
 	fmt.Printf("ID: %s\n", id)
@@ -167,16 +164,12 @@ func run(cmd *cobra.Command, args []string) error {
 
 	var passed, failed, skipped, cancelled int
 	startTime := time.Now()
-	runConfig := local.RunConfig{
-		TestPattern: pattern,
-		Extra:       extra,
-		CaseDir:     caseDir,
-		LogDir:      baseDir,
-		Logger:      log,
-		SystemInfo:  systemInfo,
-		Labels:      l,
-		NotLabels:   nl,
-	}
+	runConfig.Logger = log
+	runConfig.LogDir = baseDir
+	runConfig.CaseDir = caseDir
+	systemInfo := sysinfo.GetSystemInfo()
+	runConfig.SystemInfo = systemInfo
+
 	res, err := p.Run(runConfig)
 	if err != nil {
 		return err

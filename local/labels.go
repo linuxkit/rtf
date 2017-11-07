@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/linuxkit/rtf/sysinfo"
 )
 
 // ParseLabels constucts a map[string]bool for both positive and negative labels from a comma separated list
@@ -75,4 +77,33 @@ func getNameAndOrder(path string) (int, string) {
 	}
 	order, _ := strconv.Atoi(parts[0])
 	return order, parts[1]
+}
+
+func applySystemLabels(labels string) (map[string]bool, map[string]bool) {
+	systemInfo := sysinfo.GetSystemInfo()
+	l, nl := ParseLabels(labels)
+	for _, v := range systemInfo.List() {
+		if _, ok := l[v]; !ok {
+			l[v] = true
+		}
+	}
+	return l, nl
+}
+
+// NewRunConfig returns a new RunConfig from test labels and a pattern
+func NewRunConfig(labels string, pattern string) RunConfig {
+	matchedLabels, notLabels := applySystemLabels(labels)
+	return RunConfig{
+		TestPattern: pattern,
+		Labels:      matchedLabels,
+		NotLabels:   notLabels,
+	}
+}
+
+// ValidatePattern validates that an arg string is a valid test pattern
+func ValidatePattern(args []string) (string, error) {
+	if len(args) > 1 {
+		return "", fmt.Errorf("Expected only one test pattern")
+	}
+	return args[0], nil
 }
