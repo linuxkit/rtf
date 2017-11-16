@@ -105,5 +105,8 @@ func ValidatePattern(args []string) (string, error) {
 	if len(args) > 1 {
 		return "", fmt.Errorf("Expected only one test pattern")
 	}
+	if len(args) == 0 {
+		return "", nil
+	}
 	return args[0], nil
 }
