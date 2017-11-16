@@ -11,7 +11,7 @@ the test are written as shell scripts. The library code is in the `rt`
 directory and some common utilities and helper programs are contained in
 the `utils` directory.
 
--   `rtf` - a local test runner
+- `rtf` - a local test runner
 
 For more details, see the documentation in `./docs/USER_GUIDE.md`.
 
@@ -66,14 +66,15 @@ contents as `TESTS.log`.
 
 If you prefer a bit more information in the log files use:
 ```
-rtf -x run
+rtf -v run -x
 ```
 
-This executes the tests with `-x` and thus logs all commands executed.
+This executes the tests with `-x`, logging all commands executed to `stderr`;
+and with `-v`, causing `stderr` to be displayed to the console.
 
 For a CI system, where the output is displayed on a web page use:
 ```
-rtf -x -vvv run
+rtf -vvv run -x
 ```
 
 This prints the same information logged to the log file to the console.
