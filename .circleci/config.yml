@@ -1,0 +1,48 @@
+version: 2
+jobs:
+  build:
+    working_directory: /go/src/github.com/linuxkit/rtf
+    docker:
+      - image: circleci/golang:1.9-stretch
+    steps:
+      - checkout
+      - run: mkdir -p ./bin
+      - run:
+          name: Dependencies
+          command: |
+            go get -u github.com/golang/lint/golint
+            go get -u github.com/gordonklaus/ineffassign
+      - run:
+          name: Tests
+          command: make test
+      - run:
+          name: Linux
+          environment:
+            GOOS: linux
+            GOARCH: amd64
+          command: |
+            make clean
+            make
+            cp rtf bin/rtf-$GOOS-$GOARCH
+      - run:
+          name: Darwin
+          environment:
+            GOOS: darwin
+            GOARCH: amd64
+          command: |
+            make clean
+            make
+            cp rtf bin/rtf-$GOOS-$GOARCH
+      - run:
+          name: Windows 
+          environment:
+            GOOS: windows
+            GOARCH: amd64
+          command: |
+            make clean
+            make
+            cp rtf bin/rtf-$GOOS-$GOARCH.exe
+      - store_artifacts:
+          path: ./bin
+          destination: .
+
