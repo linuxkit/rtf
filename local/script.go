@@ -59,8 +59,6 @@ func executeScript(script, cwd, name string, args []string, config RunConfig) (R
 		return Result{}, err
 	}
 
-	osEnv := os.Environ()
-
 	rootDir := os.Getenv("RT_ROOT")
 	if rootDir == "" {
 		// Assume the source is in the GOPATH
@@ -77,24 +75,23 @@ func executeScript(script, cwd, name string, args []string, config RunConfig) (R
 
 	labels := makeLabelString(config.Labels, config.NotLabels, ":")
 
+	env := os.Environ()
+	setEnv(&env, "RT_ROOT", rootDir)
+	setEnv(&env, "RT_UTILS", utilsDir)
+	setEnv(&env, "RT_PROJECT_ROOT", projectDir)
+	setEnv(&env, "RT_OS", config.SystemInfo.OS)
+	setEnv(&env, "RT_OS_VER", config.SystemInfo.Version)
+	setEnv(&env, "RT_LABELS", labels)
+	setEnv(&env, "RT_TEST_NAME", name)
+	setEnv(&env, "RT_LIB", libDir)
+	setEnv(&env, "RT_RESULTS", config.LogDir)
 	envPath := os.Getenv("PATH")
-	rtEnv := []string{
-		fmt.Sprintf("RT_ROOT=%s", rootDir),
-		fmt.Sprintf("RT_UTILS=%s", utilsDir),
-		fmt.Sprintf("RT_PROJECT_ROOT=%s", projectDir),
-		fmt.Sprintf("RT_OS=%s", config.SystemInfo.OS),
-		fmt.Sprintf("RT_OS_VER=%s", config.SystemInfo.Version),
-		fmt.Sprintf("RT_LABELS=%s", labels),
-		fmt.Sprintf("RT_TEST_NAME=%s", name),
-		fmt.Sprintf("RT_LIB=%s", libDir),
-		fmt.Sprintf("RT_RESULTS=%s", config.LogDir),
-		fmt.Sprintf("PATH=%s:%s", utilsDir, envPath),
-	}
-	cmd.Env = append(osEnv, rtEnv...)
+	setEnv(&env, "PATH", fmt.Sprintf("%s:%s", utilsDir, envPath))
 	if runtime.GOOS == "windows" {
-		cmd.Env = append(cmd.Env, []string{"MSYS_NO_PATHCONV=1"}...)
+		setEnv(&env, "MSYS_NO_PATHCONV", "1")
 	}
 
+	cmd.Env = env
 	cmd.Dir = cwd
 
 	go func() {
@@ -146,4 +143,21 @@ func executeScript(script, cwd, name string, args []string, config RunConfig) (R
 		EndTime:    endTime,
 		Name:       name,
 	}, nil
+}
+
+// setEnv sets or appends key=value in the environment variable passed in
+func setEnv(env *[]string, key, value string) {
+	for i, e := range *env {
+		parts := strings.SplitN(e, "=", 2)
+		if len(parts) != 2 {
+			// ignore potentially malformed environment variables
+			continue
+		}
+		if parts[0] == key {
+			(*env)[i] = fmt.Sprintf("%s=%s", key, value)
+			return
+		}
+	}
+
+	*env = append(*env, fmt.Sprintf("%s=%s", key, value))
 }
