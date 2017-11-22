@@ -14,7 +14,10 @@ import (
 	"github.com/linuxkit/rtf/logger"
 )
 
-var shExecutable = "/bin/sh"
+var (
+	shExecutable = "/bin/sh"
+	psExecutable = "powershell.exe"
+)
 
 func init() {
 	if runtime.GOOS != "windows" {
@@ -42,13 +45,18 @@ func executeScript(script, cwd, name string, args []string, config RunConfig) (R
 	}
 	startTime := time.Now()
 	var cmdArgs []string
-	if config.Extra {
-		cmdArgs = append(cmdArgs, "-x")
-
+	executable := shExecutable
+	if runtime.GOOS == "windows" && filepath.Ext(script) == ".ps1" {
+		executable = psExecutable
+		cmdArgs = append(cmdArgs, []string{"-NoProfile", "-NonInteractive"}...)
+	} else {
+		if config.Extra {
+			cmdArgs = append(cmdArgs, "-x")
+		}
 	}
 	cmdArgs = append(cmdArgs, script)
 	cmdArgs = append(cmdArgs, args...)
-	cmd := exec.Command(shExecutable, cmdArgs...)
+	cmd := exec.Command(executable, cmdArgs...)
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -66,6 +74,9 @@ func executeScript(script, cwd, name string, args []string, config RunConfig) (R
 		rootDir = filepath.Join(goPath, "src", "github.com", "linuxkit", "rtf")
 	}
 	libDir := filepath.Join(rootDir, "lib", "lib.sh")
+	if executable == psExecutable {
+		libDir = filepath.Join(rootDir, "lib", "lib.ps1")
+	}
 	utilsDir := filepath.Join(rootDir, "bin")
 
 	projectDir, err := filepath.Abs(config.CaseDir)
@@ -85,10 +96,15 @@ func executeScript(script, cwd, name string, args []string, config RunConfig) (R
 	setEnv(&env, "RT_TEST_NAME", name)
 	setEnv(&env, "RT_LIB", libDir)
 	setEnv(&env, "RT_RESULTS", config.LogDir)
-	envPath := os.Getenv("PATH")
-	setEnv(&env, "PATH", fmt.Sprintf("%s:%s", utilsDir, envPath))
-	if runtime.GOOS == "windows" {
-		setEnv(&env, "MSYS_NO_PATHCONV", "1")
+	if executable == shExecutable {
+		envPath := os.Getenv("PATH")
+		setEnv(&env, "PATH", fmt.Sprintf("%s:%s", utilsDir, envPath))
+		if runtime.GOOS == "windows" {
+			setEnv(&env, "MSYS_NO_PATHCONV", "1")
+		}
+	} else {
+		envPath := os.Getenv("Path")
+		setEnv(&env, "Path", fmt.Sprintf("%s;%s", utilsDir, envPath))
 	}
 
 	cmd.Env = env
