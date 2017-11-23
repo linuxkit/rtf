@@ -127,10 +127,10 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 		config.Logger.Register(logFileName, testLogger)
 		defer config.Logger.Unregister(logFileName)
 
-		if t.Parent.PreTest != "" {
-			res, err := executeScript(t.Parent.PreTest, t.Path, name, []string{name}, config)
+		if t.Parent.PreTestPath != "" {
+			res, err := executeScript(t.Parent.PreTestPath, t.Path, name, []string{name}, config)
 			if res.TestResult != Pass {
-				return results, fmt.Errorf("Error running: %s. %s", t.Parent.PreTest, err.Error())
+				return results, fmt.Errorf("Error running: %s. %s", t.Parent.PreTestPath, err.Error())
 			}
 		}
 		// Run the test
@@ -148,10 +148,10 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 		case Cancel:
 			config.Logger.Log(logger.LevelCancel, fmt.Sprintf("%s %.2fs", res.Name, res.Duration.Seconds()))
 		}
-		if t.Parent.PostTest != "" {
-			res, err := executeScript(t.Parent.PostTest, t.Path, name, []string{name, fmt.Sprintf("%d", res.TestResult)}, config)
+		if t.Parent.PostTestPath != "" {
+			res, err := executeScript(t.Parent.PostTestPath, t.Path, name, []string{name, fmt.Sprintf("%d", res.TestResult)}, config)
 			if res.TestResult != Pass {
-				return results, fmt.Errorf("Error running: %s. %s", t.Parent.PostTest, err.Error())
+				return results, fmt.Errorf("Error running: %s. %s", t.Parent.PostTestPath, err.Error())
 			}
 		}
 		results = append(results, res)

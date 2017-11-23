@@ -37,7 +37,7 @@ func InitNewProject(path string) (*Group, error) {
 
 // NewGroup creates a new Group with the given parent and path
 func NewGroup(parent *Group, path string) (*Group, error) {
-	g := &Group{Parent: parent, Path: path, PreTest: parent.PreTest, PostTest: parent.PostTest}
+	g := &Group{Parent: parent, Path: path, PreTestPath: parent.PreTestPath, PostTestPath: parent.PostTestPath}
 	if err := g.Init(); err != nil {
 		return nil, err
 	}
@@ -84,11 +84,11 @@ func (g *Group) Init() error {
 		pre := filepath.Join(g.Path, PreTestFile)
 		post := filepath.Join(g.Path, PostTestFile)
 		if _, err := os.Stat(pre); err == nil {
-			g.PreTest = pre
+			g.PreTestPath = pre
 		}
 
 		if _, err := os.Stat(post); err == nil {
-			g.PostTest = post
+			g.PostTestPath = post
 		}
 
 	} else {
