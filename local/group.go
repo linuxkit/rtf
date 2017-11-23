@@ -66,7 +66,11 @@ func IsGroup(path string) bool {
 // Init is the group initialization function and should be called immediately after a group has been created
 func (g *Group) Init() error {
 	gf := filepath.Join(g.Path, GroupFile)
-	tags, err := ParseTags(gf)
+	if _, err := os.Stat(gf); err == nil {
+		g.GroupFilePath = gf
+	}
+
+	tags, err := ParseTags(g.GroupFilePath)
 	if err != nil {
 		tags = &Tags{}
 	}
@@ -171,25 +175,14 @@ func (g *Group) Run(config RunConfig) ([]Result, error) {
 		}}, nil
 	}
 
-	init := false
-	gfName := filepath.Join(g.Path, GroupFile)
-	_, err := os.Stat(gfName)
-	if err != nil {
-		if !os.IsNotExist(err) {
-			return results, err
-		}
-	} else {
-		init = true
-	}
-
-	if init {
+	if g.GroupFilePath != "" {
 		config.Logger.Log(logger.LevelInfo, fmt.Sprintf("%s::ginit()", g.Name()))
-		res, err := executeScript(gfName, g.Path, "", []string{"init"}, config)
+		res, err := executeScript(g.GroupFilePath, g.Path, "", []string{"init"}, config)
 		if err != nil {
 			return results, err
 		}
 		if res.TestResult != Pass {
-			return results, fmt.Errorf("Error running %s", gfName+":init")
+			return results, fmt.Errorf("Error running %s", g.GroupFilePath+":init")
 		}
 	}
 
@@ -201,14 +194,14 @@ func (g *Group) Run(config RunConfig) ([]Result, error) {
 		results = append(results, res...)
 	}
 
-	if init {
+	if g.GroupFilePath != "" {
 		config.Logger.Log(logger.LevelInfo, fmt.Sprintf("%s::gdeinit()", g.Name()))
-		res, err := executeScript(gfName, g.Path, "", []string{"deinit"}, config)
+		res, err := executeScript(g.GroupFilePath, g.Path, "", []string{"deinit"}, config)
 		if err != nil {
 			return results, err
 		}
 		if res.TestResult != Pass {
-			return results, fmt.Errorf("Error running %s", gfName+":deinit")
+			return results, fmt.Errorf("Error running %s", g.GroupFilePath+":deinit")
 		}
 	}
 	return results, nil

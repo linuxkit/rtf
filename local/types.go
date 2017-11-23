@@ -22,15 +22,16 @@ const (
 
 // Group is a group of tests and other groups
 type Group struct {
-	Tags         *Tags
-	PreTestPath  string
-	PostTestPath string
-	Parent       *Group
-	order        int
-	Path         string
-	Labels       map[string]bool
-	NotLabels    map[string]bool
-	Children     []TestContainer
+	Parent        *Group
+	Tags          *Tags
+	Path          string
+	GroupFilePath string
+	PreTestPath   string
+	PostTestPath  string
+	order         int
+	Labels        map[string]bool
+	NotLabels     map[string]bool
+	Children      []TestContainer
 }
 
 // Test is a test
