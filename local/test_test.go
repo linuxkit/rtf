@@ -2,6 +2,7 @@ package local
 
 import (
 	"fmt"
+	"runtime"
 	"testing"
 )
 
@@ -14,15 +15,36 @@ func TestFindingTests(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expected := []Result{
-		{Name: "test.osx"},
-		{Name: "test.win"},
-		{Name: "test.apps.test"},
-		{Name: "test.apps.basic.test"},
-		{Name: "test.apps.advanced.test"},
+	var expected []Result
+	switch runtime.GOOS {
+	case "darwin":
+		expected = []Result{
+			{Name: "test.osx.test"},
+			{Name: "test.win"},
+			{Name: "test.apps.test"},
+			{Name: "test.apps.basic.test"},
+			{Name: "test.apps.advanced.test"},
+		}
+	case "windows":
+		expected = []Result{
+			{Name: "test.osx"},
+			{Name: "test.win.test"},
+			{Name: "test.win.ps1.test"},
+			{Name: "test.apps.test"},
+			{Name: "test.apps.basic.test"},
+			{Name: "test.apps.advanced.test"},
+		}
+	default:
+		expected = []Result{
+			{Name: "test.osx"},
+			{Name: "test.win"},
+			{Name: "test.apps.test"},
+			{Name: "test.apps.basic.test"},
+			{Name: "test.apps.advanced.test"},
+		}
 	}
 
-	config := RunConfig{}
+	config := NewRunConfig("", "")
 	l := p.List(config)
 	for i, tst := range l {
 		if expected[i].Name != tst.Name {
