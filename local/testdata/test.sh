@@ -1,4 +1,3 @@
-#!/bin/sh
 # AUTHOR: Dave Tucker <dt@docker.com>
 # AUTHOR: Rolf Neugebauer <rolf.neugebauer@docker.com>
 # SUMMARY: A Test

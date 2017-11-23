@@ -1,4 +1,3 @@
-#!/bin/sh
 # SUMMARY: Docker for Mac and Windows regression tests
 # LABELS:
 # For the top level group.sh also specify a 'NAME:' comment
