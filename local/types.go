@@ -36,16 +36,17 @@ type Group struct {
 
 // Test is a test
 type Test struct {
-	Parent    *Group
-	Tags      *Tags
-	Path      string
-	Command   exec.Cmd
-	Repeat    int
-	order     int
-	Summary   string
-	Author    string
-	Labels    map[string]bool
-	NotLabels map[string]bool
+	Parent       *Group
+	Tags         *Tags
+	Path         string
+	TestFilePath string
+	Command      exec.Cmd
+	Repeat       int
+	order        int
+	Summary      string
+	Author       string
+	Labels       map[string]bool
+	NotLabels    map[string]bool
 }
 
 // TestResult is the result of a test run

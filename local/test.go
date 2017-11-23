@@ -38,8 +38,8 @@ func IsTest(path string) bool {
 
 // Init initializes a test and should be run immmediately after NewTest
 func (t *Test) Init() error {
-	tf := filepath.Join(t.Path, TestFile)
-	tags, err := ParseTags(tf)
+	t.TestFilePath = filepath.Join(t.Path, TestFile)
+	tags, err := ParseTags(t.TestFilePath)
 	if err != nil {
 		return err
 	}
@@ -135,8 +135,7 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 		}
 		// Run the test
 		config.Logger.Log(logger.LevelInfo, fmt.Sprintf("Running Test %s in %s", name, t.Path))
-		tf := filepath.Join(t.Path, TestFile)
-		res, err := executeScript(tf, t.Path, name, nil, config)
+		res, err := executeScript(t.TestFilePath, t.Path, name, nil, config)
 		if err != nil {
 			return results, err
 		}
