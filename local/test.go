@@ -2,8 +2,6 @@ package local
 
 import (
 	"fmt"
-	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,23 +20,15 @@ func NewTest(group *Group, path string) (*Test, error) {
 
 // IsTest determines if a path contains a test or not
 func IsTest(path string) bool {
-	files, err := ioutil.ReadDir(path)
-	if err != nil {
-		log.Fatal(err)
+	if _, err := checkScript(path, TestFileName); err != nil {
 		return false
 	}
-
-	for _, file := range files {
-		if file.Name() == TestFile {
-			return true
-		}
-	}
-	return false
+	return true
 }
 
 // Init initializes a test and should be run immmediately after NewTest
 func (t *Test) Init() error {
-	t.TestFilePath = filepath.Join(t.Path, TestFile)
+	t.TestFilePath, _ = checkScript(t.Path, TestFileName)
 	tags, err := ParseTags(t.TestFilePath)
 	if err != nil {
 		return err

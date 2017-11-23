@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -53,7 +52,7 @@ func IsGroup(path string) bool {
 	}
 
 	for _, file := range files {
-		if file.Name() == GroupFile {
+		if file.Name() == GroupFileName+".sh" || file.Name() == GroupFileName+".ps1" {
 			return true
 		}
 		if file.IsDir() {
@@ -65,10 +64,7 @@ func IsGroup(path string) bool {
 
 // Init is the group initialization function and should be called immediately after a group has been created
 func (g *Group) Init() error {
-	gf := filepath.Join(g.Path, GroupFile)
-	if _, err := os.Stat(gf); err == nil {
-		g.GroupFilePath = gf
-	}
+	g.GroupFilePath, _ = checkScript(g.Path, GroupFileName)
 
 	tags, err := ParseTags(g.GroupFilePath)
 	if err != nil {
@@ -85,16 +81,8 @@ func (g *Group) Init() error {
 
 	if g.Parent == nil {
 		// top of tree
-		pre := filepath.Join(g.Path, PreTestFile)
-		post := filepath.Join(g.Path, PostTestFile)
-		if _, err := os.Stat(pre); err == nil {
-			g.PreTestPath = pre
-		}
-
-		if _, err := os.Stat(post); err == nil {
-			g.PostTestPath = post
-		}
-
+		g.PreTestPath, _ = checkScript(g.Path, PreTestFileName)
+		g.PostTestPath, _ = checkScript(g.Path, PostTestFileName)
 	} else {
 		g.Tags.Name = fmt.Sprintf("%s.%s", g.Parent.Name(), name)
 	}
