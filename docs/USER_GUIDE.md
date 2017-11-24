@@ -33,7 +33,7 @@ tests are run.  The primary tool for this are _labels_.
 A test may define that a specific label "foobar" must be present for
 it to be run or, by prefixing the label name with a '!', that the test
 should not be run if a label is defined. The labels are defined with
-`test.sh` (see below).
+`test.sh` or `test.ps1` (see below).
 
 The regression test framework is completely agnostic to which labels
 are used for a given set of test cases, though it defines a number of
@@ -90,12 +90,13 @@ can be use to indicate that the test was cancelled (for whatever
 reason).  Each test must be located in its own sub-directory (together
 with any files it may require).
 
-Currently, a test is a simple shell script called `test.sh`. In the
-future we will also support Python and Powershell (for Windows only
-tests).
+Currently, a test is a simple shell script called `test.sh`. On
+Windows, tests may also be written as Powershell scripts and the test
+script should be called `test.ps1`.
 
-There is a template `test.sh` in `./etc/templates/test.sh` which can be
-used for writing tests. It contains a number of special comments
+There are template [`test.sh`](../etc/templates/test.sh) and
+[`test.ps1`](../etc/templates/test.sh) files which can be used for
+writing tests. A test script contains a number of special comments
 (`SUMMARY`, `LABELS`, `REPEAT`, and, `AUTHOR`) which are used by the
 regression test framework. The `SUMMARY` line should contain a *short*
 summary of what the test does. The `LABEL` is a (optional) list of
@@ -126,7 +127,8 @@ environment variables into a test script:
 
 - `RT_ROOT`: Points to the root of the test framework.
 
-- `RT_LIB`: Points to the common shell library found in `rt/lib/lib.sh`
+- `RT_LIB`: Points to the common shell library found in
+  [`lib.sh`](../lib/lib.sh) or [`lib.ps1`](../lib/lib.ps1)
 
 - `RT_UTILS`: Points to the directory where the helper applications
   are available
@@ -183,28 +185,31 @@ which may be useful when writing tests (the environment variable
 
 Any directory containing sub-directories with tests under the
 top-level project directory forms a test group.  The execution of a
-group can be customised by defining a `group.sh` file inside the group
-directory.  Like with tests, the `group.sh` may provide a `SUMMARY`
-and a set of `LABELS`.
+group can be customised by defining a `group.sh` or `group.ps1` file
+inside the group directory.  Like with tests, the group script may
+provide a `SUMMARY` and a set of `LABELS`.
 
-If a group contains a `group.sh` file, it is executed with the `init`
-argument before the first test if the groups is executed, and with the
-`deinit` argument after the last test of the group was executed.  Test
-writers can thus place group specific initialisation code into
-`group.sh`. `group.sh` is executed with the same environment variables
-set as `test.sh` scripts.
+If a group directory contains a `group.sh`/`group.ps1` file, it is
+executed with the `init` argument before the first test of the group
+is executed, and with the `deinit` argument after the last test of the
+group was executed.  Test writers can thus place group specific
+initialisation code into `group.sh`/`group.ps1`. The group script is
+executed with the same environment variables set as `test.sh` scripts.
 
-There is a template `group.sh` file in `./etc/templates/group.sh`.
+There are template [`group.sh`](../etc/templates/group.sh) and
+[`group.ps1`](../etc/templates/group.ps1) files.
 
-The top-level `group.sh` should also create a `VERSION.txt` file in
-`RT_RESULTS`, containing some form of version information.  If the
-tests are run against a local build, this could be the git sha value,
-or when run as part of CI the version of the build being tested etc.
+The top-level `group.sh`/`group.ps1` should also create a
+`VERSION.txt` file in `RT_RESULTS`, containing some form of version
+information.  If the tests are run against a local build, this could
+be the git sha value, or when run as part of CI the version of the
+build being tested etc.
 
 In addition, the top-level group may also contain two optional
-scripts, `pre-test.sh` and `post-test.sh`, which are executed before
-and after each test is run.  Both get the test name as first argument
-and `post-test.sh` gets passed the test result as the second argument.
-The idea is that these scripts may be used to collect additional
-logging or collect debug information if a test fails.  They can store
-the per test information in files prefixed with `"${RT_RESULT}/$1"`.
+scripts, `pre-test.sh` and `post-test.sh` (or Powershell equivalent),
+which are executed before and after each test is run.  Both get the
+test name as first argument and `post-test.sh` gets passed the test
+result as the second argument.  The idea is that these scripts may be
+used to collect additional logging or collect debug information if a
+test fails.  They can store the per test information in files prefixed
+with `"${RT_RESULT}/$1"`.
