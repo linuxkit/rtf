@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -37,7 +36,7 @@ func InitNewProject(path string) (*Group, error) {
 
 // NewGroup creates a new Group with the given parent and path
 func NewGroup(parent *Group, path string) (*Group, error) {
-	g := &Group{Parent: parent, Path: path, PreTest: parent.PreTest, PostTest: parent.PostTest}
+	g := &Group{Parent: parent, Path: path, PreTestPath: parent.PreTestPath, PostTestPath: parent.PostTestPath}
 	if err := g.Init(); err != nil {
 		return nil, err
 	}
@@ -53,7 +52,7 @@ func IsGroup(path string) bool {
 	}
 
 	for _, file := range files {
-		if file.Name() == GroupFile {
+		if file.Name() == GroupFileName+".sh" || file.Name() == GroupFileName+".ps1" {
 			return true
 		}
 		if file.IsDir() {
@@ -65,8 +64,9 @@ func IsGroup(path string) bool {
 
 // Init is the group initialization function and should be called immediately after a group has been created
 func (g *Group) Init() error {
-	gf := filepath.Join(g.Path, GroupFile)
-	tags, err := ParseTags(gf)
+	g.GroupFilePath, _ = checkScript(g.Path, GroupFileName)
+
+	tags, err := ParseTags(g.GroupFilePath)
 	if err != nil {
 		tags = &Tags{}
 	}
@@ -81,16 +81,8 @@ func (g *Group) Init() error {
 
 	if g.Parent == nil {
 		// top of tree
-		pre := filepath.Join(g.Path, PreTestFile)
-		post := filepath.Join(g.Path, PostTestFile)
-		if _, err := os.Stat(pre); err == nil {
-			g.PreTest = pre
-		}
-
-		if _, err := os.Stat(post); err == nil {
-			g.PostTest = post
-		}
-
+		g.PreTestPath, _ = checkScript(g.Path, PreTestFileName)
+		g.PostTestPath, _ = checkScript(g.Path, PostTestFileName)
 	} else {
 		g.Tags.Name = fmt.Sprintf("%s.%s", g.Parent.Name(), name)
 	}
@@ -171,25 +163,14 @@ func (g *Group) Run(config RunConfig) ([]Result, error) {
 		}}, nil
 	}
 
-	init := false
-	gfName := filepath.Join(g.Path, GroupFile)
-	_, err := os.Stat(gfName)
-	if err != nil {
-		if !os.IsNotExist(err) {
-			return results, err
-		}
-	} else {
-		init = true
-	}
-
-	if init {
+	if g.GroupFilePath != "" {
 		config.Logger.Log(logger.LevelInfo, fmt.Sprintf("%s::ginit()", g.Name()))
-		res, err := executeScript(gfName, g.Path, "", []string{"init"}, config)
+		res, err := executeScript(g.GroupFilePath, g.Path, "", []string{"init"}, config)
 		if err != nil {
 			return results, err
 		}
 		if res.TestResult != Pass {
-			return results, fmt.Errorf("Error running %s", gfName+":init")
+			return results, fmt.Errorf("Error running %s", g.GroupFilePath+":init")
 		}
 	}
 
@@ -201,14 +182,14 @@ func (g *Group) Run(config RunConfig) ([]Result, error) {
 		results = append(results, res...)
 	}
 
-	if init {
+	if g.GroupFilePath != "" {
 		config.Logger.Log(logger.LevelInfo, fmt.Sprintf("%s::gdeinit()", g.Name()))
-		res, err := executeScript(gfName, g.Path, "", []string{"deinit"}, config)
+		res, err := executeScript(g.GroupFilePath, g.Path, "", []string{"deinit"}, config)
 		if err != nil {
 			return results, err
 		}
 		if res.TestResult != Pass {
-			return results, fmt.Errorf("Error running %s", gfName+":deinit")
+			return results, fmt.Errorf("Error running %s", g.GroupFilePath+":deinit")
 		}
 	}
 	return results, nil

@@ -1,4 +1,3 @@
-#!/bin/sh
 ##
 ## A library of shell functions
 ##

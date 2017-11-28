@@ -1,4 +1,3 @@
-#!/bin/sh
 # SUMMARY:
 # LABELS:
 # REPEAT:

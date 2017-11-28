@@ -1,7 +1,10 @@
 package local
 
 import (
+	"os"
 	"os/exec"
+	"path/filepath"
+	"runtime"
 
 	"github.com/linuxkit/rtf/logger"
 	"github.com/linuxkit/rtf/sysinfo"
@@ -10,41 +13,60 @@ import (
 )
 
 const (
-	// GroupFile is the name of the group script
-	GroupFile = "group.sh"
-	// PreTestFile is the name of a pre-test script
-	PreTestFile = "pre-test.sh"
-	// PostTestFile is the name of a ppst-test script
-	PostTestFile = "post-test.sh"
-	// TestFile is the name of a test script
-	TestFile = "test.sh"
+	// GroupFileName is the name of the group script (without the extension)
+	GroupFileName = "group"
+	// PreTestFileName is the name of a pre-test script (without the extension)
+	PreTestFileName = "pre-test"
+	// PostTestFileName is the name of a post-test script (without the extension)
+	PostTestFileName = "post-test"
+	// TestFileName is the name of a test script (without the extension)
+	TestFileName = "test"
 )
+
+// checkScript checks if a script with 'name' exists in 'path'
+func checkScript(path, name string) (string, error) {
+	// On Windows, powershell scripts take precedence.
+	if runtime.GOOS == "windows" {
+		f := filepath.Join(path, name+".ps1")
+		if _, err := os.Stat(f); err == nil {
+			return f, nil
+		}
+	}
+
+	f := filepath.Join(path, name+".sh")
+	if _, err := os.Stat(f); err != nil {
+		return "", err
+	}
+	return f, nil
+}
 
 // Group is a group of tests and other groups
 type Group struct {
-	Tags      *Tags
-	PreTest   string
-	PostTest  string
-	Parent    *Group
-	order     int
-	Path      string
-	Labels    map[string]bool
-	NotLabels map[string]bool
-	Children  []TestContainer
+	Parent        *Group
+	Tags          *Tags
+	Path          string
+	GroupFilePath string
+	PreTestPath   string
+	PostTestPath  string
+	order         int
+	Labels        map[string]bool
+	NotLabels     map[string]bool
+	Children      []TestContainer
 }
 
 // Test is a test
 type Test struct {
-	Parent    *Group
-	Tags      *Tags
-	Path      string
-	Command   exec.Cmd
-	Repeat    int
-	order     int
-	Summary   string
-	Author    string
-	Labels    map[string]bool
-	NotLabels map[string]bool
+	Parent       *Group
+	Tags         *Tags
+	Path         string
+	TestFilePath string
+	Command      exec.Cmd
+	Repeat       int
+	order        int
+	Summary      string
+	Author       string
+	Labels       map[string]bool
+	NotLabels    map[string]bool
 }
 
 // TestResult is the result of a test run

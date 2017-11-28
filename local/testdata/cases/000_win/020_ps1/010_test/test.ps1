@@ -1,4 +1,4 @@
 # SUMMARY: A test test!
 # LABELS:
 
-exit 0
+Exit 0

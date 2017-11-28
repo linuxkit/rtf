@@ -1,4 +1,3 @@
-#!/bin/sh
 # SUMMARY: Windows specific tests
 # LABELS: win
 

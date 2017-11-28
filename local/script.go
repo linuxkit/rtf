@@ -14,7 +14,10 @@ import (
 	"github.com/linuxkit/rtf/logger"
 )
 
-var shExecutable = "/bin/sh"
+var (
+	shExecutable = "/bin/sh"
+	psExecutable = "powershell.exe"
+)
 
 func init() {
 	if runtime.GOOS != "windows" {
@@ -42,13 +45,18 @@ func executeScript(script, cwd, name string, args []string, config RunConfig) (R
 	}
 	startTime := time.Now()
 	var cmdArgs []string
-	if config.Extra {
-		cmdArgs = append(cmdArgs, "-x")
-
+	executable := shExecutable
+	if runtime.GOOS == "windows" && filepath.Ext(script) == ".ps1" {
+		executable = psExecutable
+		cmdArgs = append(cmdArgs, []string{"-NoProfile", "-NonInteractive"}...)
+	} else {
+		if config.Extra {
+			cmdArgs = append(cmdArgs, "-x")
+		}
 	}
 	cmdArgs = append(cmdArgs, script)
 	cmdArgs = append(cmdArgs, args...)
-	cmd := exec.Command(shExecutable, cmdArgs...)
+	cmd := exec.Command(executable, cmdArgs...)
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -59,8 +67,6 @@ func executeScript(script, cwd, name string, args []string, config RunConfig) (R
 		return Result{}, err
 	}
 
-	osEnv := os.Environ()
-
 	rootDir := os.Getenv("RT_ROOT")
 	if rootDir == "" {
 		// Assume the source is in the GOPATH
@@ -68,6 +74,9 @@ func executeScript(script, cwd, name string, args []string, config RunConfig) (R
 		rootDir = filepath.Join(goPath, "src", "github.com", "linuxkit", "rtf")
 	}
 	libDir := filepath.Join(rootDir, "lib", "lib.sh")
+	if executable == psExecutable {
+		libDir = filepath.Join(rootDir, "lib", "lib.ps1")
+	}
 	utilsDir := filepath.Join(rootDir, "bin")
 
 	projectDir, err := filepath.Abs(config.CaseDir)
@@ -77,24 +86,28 @@ func executeScript(script, cwd, name string, args []string, config RunConfig) (R
 
 	labels := makeLabelString(config.Labels, config.NotLabels, ":")
 
-	envPath := os.Getenv("PATH")
-	rtEnv := []string{
-		fmt.Sprintf("RT_ROOT=%s", rootDir),
-		fmt.Sprintf("RT_UTILS=%s", utilsDir),
-		fmt.Sprintf("RT_PROJECT_ROOT=%s", projectDir),
-		fmt.Sprintf("RT_OS=%s", config.SystemInfo.OS),
-		fmt.Sprintf("RT_OS_VER=%s", config.SystemInfo.Version),
-		fmt.Sprintf("RT_LABELS=%s", labels),
-		fmt.Sprintf("RT_TEST_NAME=%s", name),
-		fmt.Sprintf("RT_LIB=%s", libDir),
-		fmt.Sprintf("RT_RESULTS=%s", config.LogDir),
-		fmt.Sprintf("PATH=%s:%s", utilsDir, envPath),
-	}
-	cmd.Env = append(osEnv, rtEnv...)
-	if runtime.GOOS == "windows" {
-		cmd.Env = append(cmd.Env, []string{"MSYS_NO_PATHCONV=1"}...)
+	env := os.Environ()
+	setEnv(&env, "RT_ROOT", rootDir)
+	setEnv(&env, "RT_UTILS", utilsDir)
+	setEnv(&env, "RT_PROJECT_ROOT", projectDir)
+	setEnv(&env, "RT_OS", config.SystemInfo.OS)
+	setEnv(&env, "RT_OS_VER", config.SystemInfo.Version)
+	setEnv(&env, "RT_LABELS", labels)
+	setEnv(&env, "RT_TEST_NAME", name)
+	setEnv(&env, "RT_LIB", libDir)
+	setEnv(&env, "RT_RESULTS", config.LogDir)
+	if executable == shExecutable {
+		envPath := os.Getenv("PATH")
+		setEnv(&env, "PATH", fmt.Sprintf("%s:%s", utilsDir, envPath))
+		if runtime.GOOS == "windows" {
+			setEnv(&env, "MSYS_NO_PATHCONV", "1")
+		}
+	} else {
+		envPath := os.Getenv("Path")
+		setEnv(&env, "Path", fmt.Sprintf("%s;%s", utilsDir, envPath))
 	}
 
+	cmd.Env = env
 	cmd.Dir = cwd
 
 	go func() {
@@ -146,4 +159,21 @@ func executeScript(script, cwd, name string, args []string, config RunConfig) (R
 		EndTime:    endTime,
 		Name:       name,
 	}, nil
+}
+
+// setEnv sets or appends key=value in the environment variable passed in
+func setEnv(env *[]string, key, value string) {
+	for i, e := range *env {
+		parts := strings.SplitN(e, "=", 2)
+		if len(parts) != 2 {
+			// ignore potentially malformed environment variables
+			continue
+		}
+		if parts[0] == key {
+			(*env)[i] = fmt.Sprintf("%s=%s", key, value)
+			return
+		}
+	}
+
+	*env = append(*env, fmt.Sprintf("%s=%s", key, value))
 }

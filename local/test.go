@@ -2,8 +2,6 @@ package local
 
 import (
 	"fmt"
-	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,24 +20,16 @@ func NewTest(group *Group, path string) (*Test, error) {
 
 // IsTest determines if a path contains a test or not
 func IsTest(path string) bool {
-	files, err := ioutil.ReadDir(path)
-	if err != nil {
-		log.Fatal(err)
+	if _, err := checkScript(path, TestFileName); err != nil {
 		return false
 	}
-
-	for _, file := range files {
-		if file.Name() == TestFile {
-			return true
-		}
-	}
-	return false
+	return true
 }
 
 // Init initializes a test and should be run immmediately after NewTest
 func (t *Test) Init() error {
-	tf := filepath.Join(t.Path, TestFile)
-	tags, err := ParseTags(tf)
+	t.TestFilePath, _ = checkScript(t.Path, TestFileName)
+	tags, err := ParseTags(t.TestFilePath)
 	if err != nil {
 		return err
 	}
@@ -127,16 +117,15 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 		config.Logger.Register(logFileName, testLogger)
 		defer config.Logger.Unregister(logFileName)
 
-		if t.Parent.PreTest != "" {
-			res, err := executeScript(t.Parent.PreTest, t.Path, name, []string{name}, config)
+		if t.Parent.PreTestPath != "" {
+			res, err := executeScript(t.Parent.PreTestPath, t.Path, name, []string{name}, config)
 			if res.TestResult != Pass {
-				return results, fmt.Errorf("Error running: %s. %s", t.Parent.PreTest, err.Error())
+				return results, fmt.Errorf("Error running: %s. %s", t.Parent.PreTestPath, err.Error())
 			}
 		}
 		// Run the test
 		config.Logger.Log(logger.LevelInfo, fmt.Sprintf("Running Test %s in %s", name, t.Path))
-		tf := filepath.Join(t.Path, TestFile)
-		res, err := executeScript(tf, t.Path, name, nil, config)
+		res, err := executeScript(t.TestFilePath, t.Path, name, nil, config)
 		if err != nil {
 			return results, err
 		}
@@ -148,10 +137,10 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 		case Cancel:
 			config.Logger.Log(logger.LevelCancel, fmt.Sprintf("%s %.2fs", res.Name, res.Duration.Seconds()))
 		}
-		if t.Parent.PostTest != "" {
-			res, err := executeScript(t.Parent.PostTest, t.Path, name, []string{name, fmt.Sprintf("%d", res.TestResult)}, config)
+		if t.Parent.PostTestPath != "" {
+			res, err := executeScript(t.Parent.PostTestPath, t.Path, name, []string{name, fmt.Sprintf("%d", res.TestResult)}, config)
 			if res.TestResult != Pass {
-				return results, fmt.Errorf("Error running: %s. %s", t.Parent.PostTest, err.Error())
+				return results, fmt.Errorf("Error running: %s. %s", t.Parent.PostTestPath, err.Error())
 			}
 		}
 		results = append(results, res)

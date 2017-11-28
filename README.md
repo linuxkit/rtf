@@ -30,15 +30,27 @@ make test
 
 ## Prerequisites
 
-On a Mac and Linux, this should pretty much just work out of the box.
+On a Mac and Linux, this should pretty much just work out of the
+box. The tests are written in `sh` and expect it to be installed in
+`/bin/sh`. Some optional utilities (see [`./bin`](./bin)) are written
+in `python` and if your tests use them, you need to have python
+installed.
 
-On Windows, you need to have form of `bash`.
-The tests must be run from a `bash` shell and `bash.exe` must be
-in your path. The simplest way is to install via
-[chocolatey](https://chocolatey.org/)
+On Windows, it depends on how your tests are written. If they are
+written as `powershell` scripts, `rtf` should just work. If they are
+written as shell scripts, you need to have the MSYS2 variant of `bash`
+installed and `bash.exe` must be in your path. The simplest way to
+install it is to install `git` via
+[chocolatey](https://chocolatey.org/). Note, neither `bash` from WSL
+nor cygwin is currently supported.
 
 ```
 choco install git
+```
+
+If your tests use the optional utilities in, you also need to install `python`:
+```
+choco install python
 ```
 
 ## Quickstart
