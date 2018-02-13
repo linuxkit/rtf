@@ -182,7 +182,8 @@ func (c consoleLogFormatter) Format(timestamp time.Time, level LogLevel, msg str
 	case LevelPass, LevelFail, LevelSkip, LevelSummary, LevelCancel:
 		s = fmt.Sprintf("%s %s\n", l, msg)
 	default:
-		s = fmt.Sprintf("%s %s: %s\n", l, timestamp.Format(time.RFC3339Nano), msg)
+		// Format is time.RFC3339Nano but with trailing zeroes preserved on the nanosecond field (s/9/0/)
+		s = fmt.Sprintf("%s %s: %s\n", l, timestamp.Format("2006-01-02T15:04:05.000000000Z07:00"), msg)
 	}
 	return s
 }
