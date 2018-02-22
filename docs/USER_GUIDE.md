@@ -95,7 +95,7 @@ Windows, tests may also be written as Powershell scripts and the test
 script should be called `test.ps1`.
 
 There are template [`test.sh`](../etc/templates/test.sh) and
-[`test.ps1`](../etc/templates/test.sh) files which can be used for
+[`test.ps1`](../etc/templates/test.ps1) files which can be used for
 writing tests. A test script contains a number of special comments
 (`SUMMARY`, `LABELS`, `REPEAT`, and, `AUTHOR`) which are used by the
 regression test framework. The `SUMMARY` line should contain a *short*
