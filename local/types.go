@@ -35,6 +35,13 @@ func checkScript(path, name string) (string, error) {
 
 	f := filepath.Join(path, name+".sh")
 	if _, err := os.Stat(f); err != nil {
+		// On non-windows, shell scripts take precedence but we check for powershell too
+		if runtime.GOOS != "windows" {
+			f := filepath.Join(path, name+".ps1")
+			if _, err := os.Stat(f); err == nil {
+				return f, nil
+			}
+		}
 		return "", err
 	}
 	return f, nil

@@ -21,6 +21,11 @@ var (
 
 func init() {
 	if runtime.GOOS != "windows" {
+		t, err := exec.LookPath("pwsh")
+		if err != nil {
+			psExecutable = ""
+		}
+		psExecutable = t
 		return
 	}
 
@@ -46,13 +51,16 @@ func executeScript(script, cwd, name string, args []string, config RunConfig) (R
 	startTime := time.Now()
 	var cmdArgs []string
 	executable := shExecutable
-	if runtime.GOOS == "windows" && filepath.Ext(script) == ".ps1" {
+	if filepath.Ext(script) == ".ps1" {
 		executable = psExecutable
 		cmdArgs = append(cmdArgs, []string{"-NoProfile", "-NonInteractive"}...)
 	} else {
 		if config.Extra {
 			cmdArgs = append(cmdArgs, "-x")
 		}
+	}
+	if executable == "" {
+		return Result{}, fmt.Errorf("Can't find a suitable shell to execute %s", script)
 	}
 	cmdArgs = append(cmdArgs, script)
 	cmdArgs = append(cmdArgs, args...)

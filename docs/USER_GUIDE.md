@@ -90,9 +90,12 @@ can be use to indicate that the test was cancelled (for whatever
 reason).  Each test must be located in its own sub-directory (together
 with any files it may require).
 
-Currently, a test is a simple shell script called `test.sh`. On
-Windows, tests may also be written as Powershell scripts and the test
-script should be called `test.ps1`.
+Currently, a test is a simple shell script called `test.sh` or
+`test.ps1`. On Windows, `test.ps1` is chosen in preference over
+`test.sh` if both are present. `test.sh` should also work provided
+that MSYS2 `bash` is installed. On Unix type systems `test.sh` is
+chosen over `test.ps1`, but `test.ps1` should also work provided that
+that `powershell` is installed.
 
 There are template [`test.sh`](../etc/templates/test.sh) and
 [`test.ps1`](../etc/templates/test.ps1) files which can be used for
