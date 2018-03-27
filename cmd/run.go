@@ -75,6 +75,7 @@ var (
 	id        string
 	symlink   bool
 	extra     bool
+	parallel  bool
 )
 
 var runCmd = &cobra.Command{
@@ -88,6 +89,7 @@ func init() {
 	flags.StringVarP(&resultDir, "resultdir", "r", "_results", "Directory to place results in")
 	flags.StringVarP(&id, "id", "", "", "ID for this test run")
 	flags.BoolVarP(&extra, "extra", "x", false, "Add extra debug info to log files")
+	flags.BoolVarP(&parallel, "parallel", "p", false, "Run multiple tests in parallel")
 	RootCmd.AddCommand(runCmd)
 }
 
@@ -98,6 +100,7 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 	runConfig := local.NewRunConfig(labels, pattern)
 	runConfig.Extra = extra
+	runConfig.Parallel = parallel
 
 	p, err := local.InitNewProject(caseDir)
 	if err != nil {
