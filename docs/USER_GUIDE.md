@@ -100,14 +100,17 @@ that `powershell` is installed.
 There are template [`test.sh`](../etc/templates/test.sh) and
 [`test.ps1`](../etc/templates/test.ps1) files which can be used for
 writing tests. A test script contains a number of special comments
-(`SUMMARY`, `LABELS`, `REPEAT`, and, `AUTHOR`) which are used by the
-regression test framework. The `SUMMARY` line should contain a *short*
-summary of what the test does. The `LABEL` is a (optional) list of
-labels to control when a test should be executed.  `AUTHOR` should
-contain name and email address of the test author.  If a test is from
-multiple authors, multiple `AUTHOR` lines can be used.  Finally, the
-`REPEAT` line may contain a single number to indicate that a test
-should be executed multiple times.  The `REPEAT` line may also contain
+(`SUMMARY`, `LABELS`, `REPEAT`, `ISSUE`, and, `AUTHOR`) which are used
+by the regression test framework. The `SUMMARY` line should contain a
+*short* summary of what the test does. The `LABELS` is a (optional)
+list of labels to control when a test should be executed.  `AUTHOR`
+should contain name and email address of the test author.  If a test
+is from multiple authors, multiple `AUTHOR` lines can be used. `ISSUE`
+can be used to link a test to one or more issues on a bug tracker,
+i.e., this test exists because of these issues. To link to multiple
+issues, multiple `ISSUE` lines can be used.  Finally, the `REPEAT`
+line may contain a single number to indicate that a test should be
+executed multiple times.  The `REPEAT` line may also contain
 `<label>:<number>` entries to runtest multiple times if a label is
 present.
 
