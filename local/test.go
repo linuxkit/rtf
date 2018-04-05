@@ -129,13 +129,17 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 		if err != nil {
 			return results, err
 		}
+		msg := fmt.Sprintf("%s %.2fs", res.Name, res.Duration.Seconds())
 		switch res.TestResult {
 		case Pass:
-			config.Logger.Log(logger.LevelPass, fmt.Sprintf("%s %.2fs", res.Name, res.Duration.Seconds()))
+			config.Logger.Log(logger.LevelPass, msg)
 		case Fail:
-			config.Logger.Log(logger.LevelFail, fmt.Sprintf("%s %.2fs", res.Name, res.Duration.Seconds()))
+			if t.Tags.Issue != "" {
+				msg = msg + " [maybe: " + t.Tags.Issue + "]"
+			}
+			config.Logger.Log(logger.LevelFail, msg)
 		case Cancel:
-			config.Logger.Log(logger.LevelCancel, fmt.Sprintf("%s %.2fs", res.Name, res.Duration.Seconds()))
+			config.Logger.Log(logger.LevelCancel, msg)
 		}
 		if t.Parent.PostTestPath != "" {
 			res, err := executeScript(t.Parent.PostTestPath, t.Path, name, []string{name, fmt.Sprintf("%d", res.TestResult)}, config)
