@@ -16,6 +16,7 @@ type Tags struct {
 	Author  string `rt:"AUTHOR,allowmultiple"`
 	Labels  string `rt:"LABELS"`
 	Repeat  int    `rt:"REPEAT"`
+	Issue   string `rt:"ISSUE,allowmultiple"`
 }
 
 const allowMultiple = "allowmultiple"
