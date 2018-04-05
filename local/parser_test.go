@@ -7,6 +7,7 @@ func TestParseTags(t *testing.T) {
 	eAuthor := "Dave Tucker <dt@docker.com> Rolf Neugebauer <rolf.neugebauer@docker.com>"
 	eLabels := "foo, bar, !baz"
 	eRepeat := 5
+	eIssue := "https://github.com/linuxkit/rtf/issues/1 https://github.com/linuxkit/rtf/issues/2"
 
 	tags, err := ParseTags("testdata/test.sh")
 	if err != nil {
@@ -24,6 +25,9 @@ func TestParseTags(t *testing.T) {
 	}
 	if eRepeat != tags.Repeat {
 		t.Fatalf("\nExpected: %d \nGot: %d\n", eRepeat, tags.Repeat)
+	}
+	if eIssue != tags.Issue {
+		t.Fatalf("\nExpected: %s \nGot: %s\n", eIssue, tags.Issue)
 	}
 }
 
