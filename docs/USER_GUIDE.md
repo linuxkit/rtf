@@ -114,6 +114,11 @@ executed multiple times.  The `REPEAT` line may also contain
 `<label>:<number>` entries to runtest multiple times if a label is
 present.
 
+Optionally, if a test is a benchmark, you can echo the benchmark
+result in `test.sh` or `test.ps1` in a line *starting* with
+`RT_BENCHMARK_RESULT:`. The remainder of that line will then be logged
+in the results.
+
 A few guidelines for writing tests:
 
 - A test should always clean up whatever is created during test
