@@ -132,6 +132,9 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 		msg := fmt.Sprintf("%s %.2fs", res.Name, res.Duration.Seconds())
 		switch res.TestResult {
 		case Pass:
+			if res.BenchmarkResult != "" {
+				msg = msg + " [Benchmark: " + res.BenchmarkResult + "]"
+			}
 			config.Logger.Log(logger.LevelPass, msg)
 		case Fail:
 			if t.Tags.Issue != "" {
