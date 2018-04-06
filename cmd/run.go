@@ -170,26 +170,31 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, r := range res {
+		var resStr string
+		switch r.TestResult {
+		case local.Pass:
+			passed++
+			resStr = "Pass"
+		case local.Fail:
+			failed++
+			resStr = "Fail"
+		case local.Skip:
+			skipped++
+			resStr = "Skip"
+		case local.Cancel:
+			cancelled++
+			resStr = "Cancel"
+		}
 		testResult := []string{
 			id.String(),
 			r.EndTime.Format(time.RFC3339),
 			strconv.FormatFloat(r.Duration.Seconds(), 'f', -1, 32),
 			r.Name,
-			fmt.Sprintf("%d", r.TestResult),
+			resStr,
 			"",
 		}
 		if err = tCsv.Write(testResult); err != nil {
 			return err
-		}
-		switch r.TestResult {
-		case local.Pass:
-			passed++
-		case local.Fail:
-			failed++
-		case local.Skip:
-			skipped++
-		case local.Cancel:
-			cancelled++
 		}
 	}
 	endTime := time.Now()
