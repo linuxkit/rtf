@@ -58,6 +58,7 @@ var (
 		"Duration",
 		"Name",
 		"Result",
+		"Benchmark",
 		"Message",
 	}
 )
@@ -191,6 +192,7 @@ func run(cmd *cobra.Command, args []string) error {
 			strconv.FormatFloat(r.Duration.Seconds(), 'f', -1, 32),
 			r.Name,
 			resStr,
+			r.BenchmarkResult,
 			"",
 		}
 		if err = tCsv.Write(testResult); err != nil {
