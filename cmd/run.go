@@ -59,7 +59,8 @@ var (
 		"Name",
 		"Result",
 		"Benchmark",
-		"Message",
+		"Description",
+		"Issues",
 	}
 )
 
@@ -186,6 +187,12 @@ func run(cmd *cobra.Command, args []string) error {
 			cancelled++
 			resStr = "Cancel"
 		}
+		var summary, issue string
+		if r.Test != nil {
+			// Skipped test groups are in the result list but do not contain a Test reference
+			summary = r.Test.Tags.Summary
+			issue = r.Test.Tags.Issue
+		}
 		testResult := []string{
 			id.String(),
 			r.EndTime.Format(time.RFC3339),
@@ -193,7 +200,8 @@ func run(cmd *cobra.Command, args []string) error {
 			r.Name,
 			resStr,
 			r.BenchmarkResult,
-			"",
+			summary,
+			issue,
 		}
 		if err = tCsv.Write(testResult); err != nil {
 			return err
