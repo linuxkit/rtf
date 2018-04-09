@@ -92,14 +92,13 @@ const (
 
 // Result encapsulates a TestResult and additional data about a test run
 type Result struct {
+	Test            *Test
+	Name            string // Name may be different to Test.Name() for repeated tests.
 	TestResult      TestResult
 	BenchmarkResult string
 	StartTime       time.Time
 	EndTime         time.Time
 	Duration        time.Duration
-	Name            string
-	Summary         string
-	Labels          string
 }
 
 // OSInfo contains information about the OS the tests are running on

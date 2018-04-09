@@ -63,7 +63,7 @@ func list(_ *cobra.Command, args []string) error {
 		} else {
 			state = green("RUN")
 		}
-		fmt.Fprintf(w, "%s\t%s\t%s\n", state, t.Name, t.Labels)
+		fmt.Fprintf(w, "%s\t%s\t%s\n", state, t.Name, t.Test.LabelString())
 	}
 	w.Flush()
 	return nil

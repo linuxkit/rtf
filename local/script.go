@@ -170,12 +170,12 @@ func executeScript(script, cwd, name string, args []string, config RunConfig) (R
 	endTime := time.Now()
 	duration := endTime.Sub(startTime)
 	return Result{
+		Name:            name,
 		TestResult:      res,
 		BenchmarkResult: bmResult,
 		StartTime:       startTime,
 		Duration:        duration,
 		EndTime:         endTime,
-		Name:            name,
 	}, nil
 }
 

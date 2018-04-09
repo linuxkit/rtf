@@ -69,16 +69,14 @@ func (t *Test) LabelString() string {
 func (t *Test) List(config RunConfig) []Result {
 	if !t.willRun(config) {
 		return []Result{{
-			TestResult: Skip,
+			Test:       t,
 			Name:       t.Name(),
-			Summary:    t.Tags.Summary,
-			Labels:     t.LabelString(),
+			TestResult: Skip,
 		}}
 	}
 	return []Result{{
-		Name:    t.Name(),
-		Summary: t.Tags.Summary,
-		Labels:  t.LabelString(),
+		Test: t,
+		Name: t.Name(),
 	}}
 }
 
@@ -89,8 +87,8 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 
 	if !t.willRun(config) {
 		config.Logger.Log(logger.LevelSkip, fmt.Sprintf("%s %.2fs", t.Name(), 0.0))
-		return []Result{{TestResult: Skip,
-			Name: t.Name(),
+		return []Result{{Test: t,
+			TestResult: Skip,
 		}}, nil
 	}
 
@@ -150,6 +148,7 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 				return results, fmt.Errorf("Error running: %s. %s", t.Parent.PostTestPath, err.Error())
 			}
 		}
+		res.Test = t
 		results = append(results, res)
 	}
 	return results, nil
