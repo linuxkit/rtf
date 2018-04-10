@@ -51,6 +51,9 @@ var (
 		"OS",
 		"OS Name",
 		"OS Version",
+		"System Model",
+		"CPU",
+		"Memory",
 	}
 	testCsvFields = []string{
 		"ID",
@@ -222,6 +225,9 @@ func run(cmd *cobra.Command, args []string) error {
 		systemInfo.OS,
 		systemInfo.Name,
 		systemInfo.Version,
+		systemInfo.Model,
+		systemInfo.CPU,
+		strconv.FormatInt(systemInfo.Memory, 10),
 	}
 	if err = sCsv.Write(summary); err != nil {
 		return err
