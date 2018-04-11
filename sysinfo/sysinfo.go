@@ -8,6 +8,10 @@ type SystemInfo struct {
 	Name    string
 	Version string
 	Arch    string
+
+	Model  string
+	CPU    string
+	Memory int64
 }
 
 // GetSystemInfo populates a new SystemInfo with both generic and

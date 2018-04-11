@@ -51,6 +51,9 @@ var (
 		"OS",
 		"OS Name",
 		"OS Version",
+		"System Model",
+		"CPU",
+		"Memory",
 	}
 	testCsvFields = []string{
 		"ID",
@@ -58,7 +61,9 @@ var (
 		"Duration",
 		"Name",
 		"Result",
-		"Message",
+		"Benchmark",
+		"Description",
+		"Issues",
 	}
 )
 
@@ -170,26 +175,39 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, r := range res {
+		var resStr string
+		switch r.TestResult {
+		case local.Pass:
+			passed++
+			resStr = "Pass"
+		case local.Fail:
+			failed++
+			resStr = "Fail"
+		case local.Skip:
+			skipped++
+			resStr = "Skip"
+		case local.Cancel:
+			cancelled++
+			resStr = "Cancel"
+		}
+		var summary, issue string
+		if r.Test != nil {
+			// Skipped test groups are in the result list but do not contain a Test reference
+			summary = r.Test.Tags.Summary
+			issue = r.Test.Tags.Issue
+		}
 		testResult := []string{
 			id.String(),
 			r.EndTime.Format(time.RFC3339),
 			strconv.FormatFloat(r.Duration.Seconds(), 'f', -1, 32),
 			r.Name,
-			fmt.Sprintf("%d", r.TestResult),
-			"",
+			resStr,
+			r.BenchmarkResult,
+			summary,
+			issue,
 		}
 		if err = tCsv.Write(testResult); err != nil {
 			return err
-		}
-		switch r.TestResult {
-		case local.Pass:
-			passed++
-		case local.Fail:
-			failed++
-		case local.Skip:
-			skipped++
-		case local.Cancel:
-			cancelled++
 		}
 	}
 	endTime := time.Now()
@@ -207,6 +225,9 @@ func run(cmd *cobra.Command, args []string) error {
 		systemInfo.OS,
 		systemInfo.Name,
 		systemInfo.Version,
+		systemInfo.Model,
+		systemInfo.CPU,
+		strconv.FormatInt(systemInfo.Memory, 10),
 	}
 	if err = sCsv.Write(summary); err != nil {
 		return err

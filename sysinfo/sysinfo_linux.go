@@ -3,11 +3,53 @@ package sysinfo
 import (
 	"io/ioutil"
 	"os/exec"
+	"strconv"
 	"strings"
 )
 
 func getPlatformSpecifics(info SystemInfo) SystemInfo {
 	info.Name, info.Version = linuxVersion()
+
+	info.Model = "UNKNOWN" // No easy way to find out system details on Linux
+	info.CPU = "UNKNOWN"
+	info.Memory = -1
+
+	out, err := exec.Command("cat", "/proc/cpuinfo").Output()
+	if err == nil {
+		for _, line := range strings.Split(string(out), "\n") {
+			fs := strings.Split(line, ":")
+			if len(fs) < 2 {
+				continue
+			}
+			k := strings.TrimSpace(fs[0])
+			v := strings.TrimSpace(fs[1])
+
+			if k == "model name" {
+				info.CPU = v
+				break
+			}
+		}
+	}
+
+	out, err = exec.Command("cat", "/proc/meminfo").Output()
+	if err == nil {
+		for _, line := range strings.Split(string(out), "\n") {
+			fs := strings.Split(line, ":")
+			if len(fs) < 2 {
+				continue
+			}
+			k := strings.TrimSpace(fs[0])
+			v := strings.TrimSpace(fs[1])
+
+			if k == "MemTotal" {
+				v = strings.Replace(v, " kB", "", -1)
+				n, _ := strconv.ParseInt(v, 10, 64)
+				info.Memory = n * 1024
+				break
+			}
+		}
+	}
+
 	return info
 }
 

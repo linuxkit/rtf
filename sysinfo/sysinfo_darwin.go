@@ -2,6 +2,7 @@ package sysinfo
 
 import (
 	"os/exec"
+	"strconv"
 	"strings"
 )
 
@@ -15,14 +16,37 @@ var osxVersionMap = map[string]string{
 }
 
 func getPlatformSpecifics(info SystemInfo) SystemInfo {
+	info.Name = "UNKNOWN"
+	info.Version = "UNKNOWN"
+	info.Model = "UNKNOWN"
+	info.CPU = "UNKNOWN"
+	info.Memory = -1
+
 	out, err := exec.Command("sw_vers", "-productVersion").Output()
-	if err != nil {
-		info.Name = "UNKNOWN"
-		info.Version = "UNKNOWN"
-		return info
+	if err == nil {
+		info.Version = strings.TrimSpace(string(out))
+		info.Name = resolveNameFromVersion(info.Version)
 	}
-	info.Version = strings.TrimSpace(string(out))
-	info.Name = resolveNameFromVersion(info.Version)
+
+	out, err = exec.Command("sysctl", "hw.model").Output()
+	if err == nil {
+		// The format is something like: "hw.model: MacBookPro12,1"
+		info.Model = strings.TrimSpace(strings.Fields(string(out))[1])
+	}
+
+	out, err = exec.Command("sysctl", "machdep.cpu.brand_string").Output()
+	if err == nil {
+		// The format is something like: "machdep.cpu.brand_string: Intel(R) Core(TM) i7-5557U CPU @ 3.10GHz"
+		info.CPU = strings.TrimSpace(strings.Fields(string(out))[1])
+	}
+
+	out, err = exec.Command("sysctl", "hw.memsize").Output()
+	if err == nil {
+		// The format is something like: "hw.memsize: 17179869184"
+		memStr := strings.TrimSpace(strings.Fields(string(out))[1])
+		info.Memory, _ = strconv.ParseInt(memStr, 10, 64)
+	}
+
 	return info
 }
 

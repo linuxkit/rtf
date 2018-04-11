@@ -118,10 +118,19 @@ func executeScript(script, cwd, name string, args []string, config RunConfig) (R
 	cmd.Env = env
 	cmd.Dir = cwd
 
+	var bmResult string
 	go func() {
 		scanner := bufio.NewScanner(stdout)
 		for scanner.Scan() {
-			config.Logger.Log(logger.LevelStdout, scanner.Text())
+			// Check output for potential benchmark result
+			line := scanner.Text()
+			if strings.HasPrefix(line, "RT_BENCHMARK_RESULT:") {
+				tmp := strings.SplitN(line, ":", 2)
+				if len(tmp) == 2 {
+					bmResult = strings.TrimSpace(tmp[1])
+				}
+			}
+			config.Logger.Log(logger.LevelStdout, line)
 		}
 	}()
 
@@ -161,11 +170,12 @@ func executeScript(script, cwd, name string, args []string, config RunConfig) (R
 	endTime := time.Now()
 	duration := endTime.Sub(startTime)
 	return Result{
-		TestResult: res,
-		StartTime:  startTime,
-		Duration:   duration,
-		EndTime:    endTime,
-		Name:       name,
+		Name:            name,
+		TestResult:      res,
+		BenchmarkResult: bmResult,
+		StartTime:       startTime,
+		Duration:        duration,
+		EndTime:         endTime,
 	}, nil
 }
 

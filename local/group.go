@@ -137,8 +137,6 @@ func (g *Group) List(config RunConfig) []Result {
 		return []Result{{
 			TestResult: Skip,
 			Name:       g.Name(),
-			Summary:    g.Tags.Summary,
-			Labels:     g.LabelString(),
 		}}
 	}
 
