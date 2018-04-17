@@ -279,7 +279,7 @@ func setupResultsDirectory(id string, link bool) (string, error) {
 			}
 		}
 
-		if err := os.Symlink(baseDir, linkPath); err != nil {
+		if err := os.Symlink(id, linkPath); err != nil {
 			return "", err
 		}
 	}
