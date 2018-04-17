@@ -69,6 +69,8 @@ var (
 
 var (
 	resultDir string
+	id        string
+	symlink   bool
 	extra     bool
 )
 
@@ -81,6 +83,7 @@ var runCmd = &cobra.Command{
 func init() {
 	flags := runCmd.Flags()
 	flags.StringVarP(&resultDir, "resultdir", "r", "_results", "Directory to place results in")
+	flags.StringVarP(&id, "id", "", "", "ID for this test run")
 	flags.BoolVarP(&extra, "extra", "x", false, "Add extra debug info to log files")
 	RootCmd.AddCommand(runCmd)
 }
@@ -107,9 +110,13 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 	fmt.Printf("LABELS: %s\n", strings.Join(labelList, ", "))
 
-	id := uuid.Generate()
+	if id == "" {
+		symlink = true
+		id = uuid.Generate().String()
+	}
+
 	fmt.Printf("ID: %s\n", id)
-	baseDir, err := setupResultsDirectory(id.String())
+	baseDir, err := setupResultsDirectory(id, symlink)
 	if err != nil {
 		return err
 	}
@@ -197,7 +204,7 @@ func run(cmd *cobra.Command, args []string) error {
 			issue = r.Test.Tags.Issue
 		}
 		testResult := []string{
-			id.String(),
+			id,
 			r.EndTime.Format(time.RFC3339),
 			strconv.FormatFloat(r.Duration.Seconds(), 'f', -1, 32),
 			r.Name,
@@ -213,7 +220,7 @@ func run(cmd *cobra.Command, args []string) error {
 	endTime := time.Now()
 	duration := endTime.Sub(startTime)
 	summary := []string{
-		id.String(),
+		id,
 		"UNKNOWN",
 		startTime.Format(time.RFC3339),
 		endTime.Format(time.RFC3339),
@@ -250,7 +257,7 @@ func run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func setupResultsDirectory(id string) (string, error) {
+func setupResultsDirectory(id string, link bool) (string, error) {
 	baseDir, err := filepath.Abs(filepath.Join(resultDir, id))
 	if err != nil {
 		return "", err
@@ -263,16 +270,18 @@ func setupResultsDirectory(id string) (string, error) {
 		}
 	}
 
-	linkPath := filepath.Join(resultDir, latestResults)
-	_, err = os.Lstat(linkPath)
-	if err == nil {
-		if err := os.Remove(linkPath); err != nil {
+	if link {
+		linkPath := filepath.Join(resultDir, latestResults)
+		_, err = os.Lstat(linkPath)
+		if err == nil {
+			if err := os.Remove(linkPath); err != nil {
+				return "", err
+			}
+		}
+
+		if err := os.Symlink(baseDir, linkPath); err != nil {
 			return "", err
 		}
-	}
-
-	if err := os.Symlink(baseDir, linkPath); err != nil {
-		return "", err
 	}
 
 	return baseDir, nil
