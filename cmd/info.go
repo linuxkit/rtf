@@ -45,8 +45,8 @@ func info(_ *cobra.Command, _ []string) error {
 
 	lst := p.List(config)
 	fmt.Fprintf(w, "NAME\tDESCRIPTION\n")
-	for _, t := range lst {
-		fmt.Fprintf(w, "%s\t%s\n", t.Name, t.Test.Tags.Summary)
+	for _, i := range lst {
+		fmt.Fprintf(w, "%s\t%s\n", i.Name, i.Summary)
 	}
 	w.Flush()
 	return nil

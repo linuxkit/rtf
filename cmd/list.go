@@ -56,14 +56,14 @@ func list(_ *cobra.Command, args []string) error {
 
 	lst := p.List(config)
 	fmt.Fprint(w, "STATE\tTEST\tLABELS\n")
-	for _, t := range lst {
+	for _, i := range lst {
 		var state string
-		if t.TestResult == local.Skip {
+		if i.TestResult == local.Skip {
 			state = yellow("SKIP")
 		} else {
 			state = green("RUN")
 		}
-		fmt.Fprintf(w, "%s\t%s\t%s\n", state, t.Name, t.Test.LabelString())
+		fmt.Fprintf(w, "%s\t%s\t%s\n", state, i.Name, i.LabelString())
 	}
 	w.Flush()
 	return nil
