@@ -134,9 +134,12 @@ func (g *Group) List(config RunConfig) []Result {
 	sort.Sort(ByOrder(g.Children))
 
 	if !g.willRun(config) {
+		// Create a fake test to make the labels accessible
+		t := &Test{Labels: g.Labels, NotLabels: g.NotLabels}
 		return []Result{{
 			TestResult: Skip,
 			Name:       g.Name(),
+			Test:       t,
 		}}
 	}
 
