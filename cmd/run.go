@@ -16,7 +16,9 @@ package cmd
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -31,10 +33,11 @@ import (
 )
 
 const (
-	testsCsvName   = "TESTS.CSV"
-	summaryCsvName = "SUMMARY.CSV"
-	testsLogName   = "TESTS.log"
-	latestResults  = "latest"
+	summaryJSONName = "SUMMARY.json"
+	testsCsvName    = "TESTS.CSV"
+	summaryCsvName  = "SUMMARY.CSV"
+	testsLogName    = "TESTS.log"
+	latestResults   = "latest"
 )
 
 var (
@@ -123,6 +126,7 @@ func run(cmd *cobra.Command, args []string) error {
 	testsLogPath := filepath.Join(baseDir, testsLogName)
 	testsCsvPath := filepath.Join(baseDir, testsCsvName)
 	summaryCsvPath := filepath.Join(baseDir, summaryCsvName)
+	summaryJSONPath := filepath.Join(baseDir, summaryJSONName)
 
 	tf, err := os.Create(testsCsvPath)
 	if err != nil {
@@ -176,12 +180,23 @@ func run(cmd *cobra.Command, args []string) error {
 	systemInfo := sysinfo.GetSystemInfo()
 	runConfig.SystemInfo = systemInfo
 
+	summary := local.Summary{
+		ID:         id,
+		SystemInfo: systemInfo,
+		Labels:     labelList,
+		StartTime:  startTime,
+	}
+
 	res, err := p.Run(runConfig)
 	if err != nil {
 		return err
 	}
 
 	for _, r := range res {
+		if r.Test != nil {
+			summary.Results = append(summary.Results, r)
+		}
+
 		switch r.TestResult {
 		case local.Pass:
 			passed++
@@ -192,10 +207,10 @@ func run(cmd *cobra.Command, args []string) error {
 		case local.Cancel:
 			cancelled++
 		}
-		var summary, issue string
+		var testSummary, issue string
 		if r.Test != nil {
 			// Skipped test groups are in the result list but do not contain a Test reference
-			summary = r.Test.Tags.Summary
+			testSummary = r.Test.Tags.Summary
 			issue = r.Test.Tags.Issue
 		}
 		testResult := []string{
@@ -205,7 +220,7 @@ func run(cmd *cobra.Command, args []string) error {
 			r.Name,
 			local.TestResultNames[r.TestResult],
 			r.BenchmarkResult,
-			summary,
+			testSummary,
 			issue,
 		}
 		if err = tCsv.Write(testResult); err != nil {
@@ -214,7 +229,17 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 	endTime := time.Now()
 	duration := endTime.Sub(startTime)
-	summary := []string{
+
+	summary.EndTime = endTime
+	summaryJSON, err := json.Marshal(summary)
+	if err != nil {
+		return err
+	}
+	if err = ioutil.WriteFile(summaryJSONPath, summaryJSON, 0644); err != nil {
+		return err
+	}
+
+	summaryCSV := []string{
 		id,
 		"UNKNOWN",
 		startTime.Format(time.RFC3339),
@@ -231,7 +256,7 @@ func run(cmd *cobra.Command, args []string) error {
 		systemInfo.CPU,
 		strconv.FormatInt(systemInfo.Memory, 10),
 	}
-	if err = sCsv.Write(summary); err != nil {
+	if err = sCsv.Write(summaryCSV); err != nil {
 		return err
 	}
 

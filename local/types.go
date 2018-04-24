@@ -119,13 +119,13 @@ var TestResultColorFunc = map[TestResult]func(a ...interface{}) string{}
 
 // Result encapsulates a TestResult and additional data about a test run
 type Result struct {
-	Test            *Test
-	Name            string // Name may be different to Test.Name() for repeated tests.
-	TestResult      TestResult
-	BenchmarkResult string
-	StartTime       time.Time
-	EndTime         time.Time
-	Duration        time.Duration
+	Test            *Test         `json:"-"`
+	Name            string        `json:"name,omitempty"` // Name may be different to Test.Name() for repeated tests.
+	TestResult      TestResult    `json:"result"`
+	BenchmarkResult string        `json:"benchmark,omitempty"`
+	StartTime       time.Time     `json:"start,omitempty"`
+	EndTime         time.Time     `json:"end,omitempty"`
+	Duration        time.Duration `json:"duration,omitempty"`
 }
 
 // Info encapsulates the information necessary to list tests and test groups
@@ -180,3 +180,13 @@ func (a ByOrder) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 
 // Less compares whether the order of i is less than that of j
 func (a ByOrder) Less(i, j int) bool { return a[i].Order() < a[j].Order() }
+
+// Summary contains a summary of a whole run, mostly used for writing out a JSON file
+type Summary struct {
+	ID         string             `json:"id,omitempty"`
+	StartTime  time.Time          `json:"start,omitempty"`
+	EndTime    time.Time          `json:"end,omitempty"`
+	SystemInfo sysinfo.SystemInfo `json:"system,omitempty"`
+	Labels     []string           `json:"labels,omitempty"`
+	Results    []Result           `json:"results,omitempty"`
+}
