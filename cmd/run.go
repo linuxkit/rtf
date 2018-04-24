@@ -182,20 +182,15 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, r := range res {
-		var resStr string
 		switch r.TestResult {
 		case local.Pass:
 			passed++
-			resStr = "Pass"
 		case local.Fail:
 			failed++
-			resStr = "Fail"
 		case local.Skip:
 			skipped++
-			resStr = "Skip"
 		case local.Cancel:
 			cancelled++
-			resStr = "Cancel"
 		}
 		var summary, issue string
 		if r.Test != nil {
@@ -208,7 +203,7 @@ func run(cmd *cobra.Command, args []string) error {
 			r.EndTime.Format(time.RFC3339),
 			strconv.FormatFloat(r.Duration.Seconds(), 'f', -1, 32),
 			r.Name,
-			resStr,
+			local.TestResultNames[r.TestResult],
 			r.BenchmarkResult,
 			summary,
 			issue,

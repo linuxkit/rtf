@@ -19,7 +19,6 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/fatih/color"
 	"github.com/linuxkit/rtf/local"
 	"github.com/spf13/cobra"
 )
@@ -36,10 +35,6 @@ func init() {
 }
 
 func list(_ *cobra.Command, args []string) error {
-	// FIXME: Colors appear to confuse the TabWriter
-	green := color.New(color.FgGreen).SprintFunc()
-	yellow := color.New(color.FgYellow).SprintFunc()
-
 	pattern, err := local.ValidatePattern(args)
 	if err != nil {
 		return err
@@ -57,12 +52,7 @@ func list(_ *cobra.Command, args []string) error {
 	lst := p.List(config)
 	fmt.Fprint(w, "STATE\tTEST\tLABELS\n")
 	for _, i := range lst {
-		var state string
-		if i.TestResult == local.Skip {
-			state = yellow("SKIP")
-		} else {
-			state = green("RUN")
-		}
+		state := i.TestResult.Sprintf(local.TestResultNames[i.TestResult])
 		fmt.Fprintf(w, "%s\t%s\t%s\n", state, i.Name, i.LabelString())
 	}
 	w.Flush()

@@ -1,15 +1,16 @@
 package local
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"time"
 
+	"github.com/fatih/color"
 	"github.com/linuxkit/rtf/logger"
 	"github.com/linuxkit/rtf/sysinfo"
-
-	"time"
 )
 
 const (
@@ -89,6 +90,32 @@ const (
 	// Cancel is a test cancellation
 	Cancel
 )
+
+// TestResultNames provides a mapping of numerical result values to human readable strings
+var TestResultNames = map[TestResult]string{
+	Pass:   "Pass",
+	Fail:   "Fail",
+	Skip:   "Skip",
+	Cancel: "Cancel",
+}
+
+// Sprintf prints the arguments using fmt.Sprintf but colours it depending on the TestResult
+func (r TestResult) Sprintf(format string, a ...interface{}) string {
+	switch r {
+	case Pass:
+		return color.GreenString(format, a...)
+	case Fail:
+		return color.RedString(format, a...)
+	case Cancel:
+		return color.YellowString(format, a...)
+	case Skip:
+		return color.YellowString(format, a...)
+	}
+	return fmt.Sprintf(format, a...)
+}
+
+// TestResultColorFunc provides a mapping of numerical result values to a fmt.Sprintf() style function
+var TestResultColorFunc = map[TestResult]func(a ...interface{}) string{}
 
 // Result encapsulates a TestResult and additional data about a test run
 type Result struct {
