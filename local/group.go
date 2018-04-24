@@ -129,23 +129,25 @@ func (g *Group) Name() string {
 }
 
 // List lists all child groups and tests
-func (g *Group) List(config RunConfig) []Result {
-	result := []Result{}
+func (g *Group) List(config RunConfig) []Info {
 	sort.Sort(ByOrder(g.Children))
 
 	if !g.willRun(config) {
-		return []Result{{
+		return []Info{{
 			TestResult: Skip,
 			Name:       g.Name(),
+			Labels:     g.Labels,
+			NotLabels:  g.NotLabels,
 		}}
 	}
 
+	infos := []Info{}
 	for _, c := range g.Children {
 		lst := c.List(config)
-		result = append(result, lst...)
+		infos = append(infos, lst...)
 	}
 
-	return result
+	return infos
 }
 
 // Run will run all child groups and tests

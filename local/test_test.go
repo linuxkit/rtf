@@ -70,10 +70,6 @@ func TestTestPattern(t *testing.T) {
 		if tst.Name == "test.apps.basic.test" && tst.TestResult != Pass {
 			t.Fatal("test.apps.basic.test matches the TestPattern but is not going to run")
 		}
-		if tst.Test != nil {
-			fmt.Printf("Name: %s Summary: %s CheckLabel: %d\n", tst.Name, tst.Test.Tags.Summary, tst.TestResult)
-		} else {
-			fmt.Printf("Name: %s CheckLabel: %d\n", tst.Name, tst.TestResult)
-		}
+		fmt.Printf("Name: %s Summary: %s CheckLabel: %d\n", tst.Name, tst.Summary, tst.TestResult)
 	}
 }

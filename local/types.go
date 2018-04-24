@@ -101,6 +101,20 @@ type Result struct {
 	Duration        time.Duration
 }
 
+// Info encapsulates the information necessary to list tests and test groups
+type Info struct {
+	Name       string
+	TestResult TestResult
+	Summary    string
+	Labels     map[string]bool
+	NotLabels  map[string]bool
+}
+
+// LabelString returns all labels in a comma separated string
+func (i *Info) LabelString() string {
+	return makeLabelString(i.Labels, i.NotLabels, ", ")
+}
+
 // OSInfo contains information about the OS the tests are running on
 type OSInfo struct {
 	OS      string
@@ -124,7 +138,7 @@ type RunConfig struct {
 // A TestContainer is a container that can hold one or more tests
 type TestContainer interface {
 	Order() int
-	List(config RunConfig) []Result
+	List(config RunConfig) []Info
 	Run(config RunConfig) ([]Result, error)
 }
 

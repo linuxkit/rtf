@@ -66,18 +66,18 @@ func (t *Test) LabelString() string {
 }
 
 // List satisfies the TestContainer interface
-func (t *Test) List(config RunConfig) []Result {
-	if !t.willRun(config) {
-		return []Result{{
-			Test:       t,
-			Name:       t.Name(),
-			TestResult: Skip,
-		}}
+func (t *Test) List(config RunConfig) []Info {
+	info := Info{
+		Name:      t.Name(),
+		Summary:   t.Tags.Summary,
+		Labels:    t.Labels,
+		NotLabels: t.NotLabels,
 	}
-	return []Result{{
-		Test: t,
-		Name: t.Name(),
-	}}
+
+	if !t.willRun(config) {
+		info.TestResult = Skip
+	}
+	return []Info{info}
 }
 
 // Run runs a test
