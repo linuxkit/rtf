@@ -34,8 +34,8 @@ import (
 
 const (
 	summaryJSONName = "SUMMARY.json"
-	testsCsvName    = "TESTS.CSV"
-	summaryCsvName  = "SUMMARY.CSV"
+	testsCsvName    = "TESTS.csv"
+	summaryCsvName  = "SUMMARY.csv"
 	testsLogName    = "TESTS.log"
 	latestResults   = "latest"
 )
