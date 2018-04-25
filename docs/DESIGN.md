@@ -20,6 +20,10 @@ The structure should make it very easy to store the test results in a
 simple database containing two tables, one with test summaries and
 another with all test results.
 
+In addition to CSV files, a `SUMMARY.json` is also generated. It
+contains information about the system and the result for each test in
+JSON format.
+
 ## Logging
 
 For logging we utilise a custom logging package in `./logger`.

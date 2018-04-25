@@ -68,13 +68,14 @@ defaults to `./cases`
 To list all current tests run `rtf list`, or to get a one line
 summary for each test use `rtf info`.
 
-When running tests, by default a line per test is printed on the console
-with a pass/fail indication. Detailed logs, by default, are stored in
-`./_results/<UUID>/`. In that directory, `TESTS.log` contains detailed
-logs of all tests, `TESTS.csv` contains a line per test and
-`SUMMARY.csv` contains a one line summary of the all tests run. The
-directory also contains a log file for each tests, with the same
-contents as `TESTS.log`.
+When running tests, by default a line per test is printed on the
+console with a pass/fail indication. Detailed logs, by default, are
+stored in `./_results/<UUID>/`. In that directory, `TESTS.log`
+contains detailed logs of all tests, `TESTS.csv` contains a line per
+test, `SUMMARY.csv` contains a one line summary of the all tests run,
+and `SUMMARY.json` contains both a test summary and the individual
+test results. The directory also contains a log file for each tests,
+with the same contents as `TESTS.log`.
 
 If you prefer a bit more information in the log files use:
 ```
@@ -90,3 +91,9 @@ rtf -vvv run -x
 ```
 
 This prints the same information logged to the log file to the console.
+
+There is initial support for comparing the result from two test runs:
+```
+rtf compare <path to SUMMARY.json> <path to SUMMARY.json> ...
+```
+which will display the results side by side.
