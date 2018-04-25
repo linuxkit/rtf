@@ -70,6 +70,7 @@ func (t *Test) List(config RunConfig) []Info {
 	info := Info{
 		Name:      t.Name(),
 		Summary:   t.Tags.Summary,
+		Issue:     t.Tags.Issue,
 		Labels:    t.Labels,
 		NotLabels: t.NotLabels,
 	}

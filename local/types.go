@@ -133,6 +133,7 @@ type Info struct {
 	Name       string
 	TestResult TestResult
 	Summary    string
+	Issue      string
 	Labels     map[string]bool
 	NotLabels  map[string]bool
 }
