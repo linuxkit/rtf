@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"encoding/csv"
 	"fmt"
 	"os"
 	"text/tabwriter"
@@ -29,7 +30,13 @@ var infoCmd = &cobra.Command{
 	RunE:  info,
 }
 
+var (
+	csvInfo bool
+)
+
 func init() {
+	flags := infoCmd.Flags()
+	flags.BoolVarP(&csvInfo, "csv", "", false, "Generate a CSV file")
 	RootCmd.AddCommand(infoCmd)
 }
 
@@ -40,14 +47,32 @@ func info(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	w := new(tabwriter.Writer)
-	w.Init(os.Stdout, 0, 8, 0, '\t', 0)
+	tw := new(tabwriter.Writer)
+	tw.Init(os.Stdout, 0, 8, 0, '\t', 0)
+
+	cw := csv.NewWriter(os.Stdout)
 
 	lst := p.List(config)
-	fmt.Fprintf(w, "NAME\tDESCRIPTION\n")
-	for _, i := range lst {
-		fmt.Fprintf(w, "%s\t%s\n", i.Name, i.Summary)
+	if !csvInfo {
+		fmt.Fprintf(tw, "NAME\tDESCRIPTION\n")
+	} else {
+		heading := []string{"Name", "Description", "Known issues"}
+		if err := cw.Write(heading); err != nil {
+			return nil
+		}
 	}
-	w.Flush()
+
+	for _, i := range lst {
+		if !csvInfo {
+			fmt.Fprintf(tw, "%s\t%s\n", i.Name, i.Summary)
+		} else {
+			out := []string{i.Name, i.Summary, i.Issue}
+			if err := cw.Write(out); err != nil {
+				return nil
+			}
+		}
+	}
+	tw.Flush()
+	cw.Flush()
 	return nil
 }
