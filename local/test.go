@@ -88,6 +88,7 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 	if !t.willRun(config) {
 		config.Logger.Log(logger.LevelSkip, fmt.Sprintf("%s %.2fs", t.Name(), 0.0))
 		return []Result{{Test: t,
+			Name:       t.Name(),
 			TestResult: Skip,
 		}}, nil
 	}
