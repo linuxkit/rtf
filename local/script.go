@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -118,6 +119,10 @@ func executeScript(script, cwd, name string, args []string, config RunConfig) (R
 	cmd.Env = env
 	cmd.Dir = cwd
 
+	var wg sync.WaitGroup
+
+	wg.Add(2)
+
 	var bmResult string
 	go func() {
 		scanner := bufio.NewScanner(stdout)
@@ -132,6 +137,7 @@ func executeScript(script, cwd, name string, args []string, config RunConfig) (R
 			}
 			config.Logger.Log(logger.LevelStdout, line)
 		}
+		wg.Done()
 	}()
 
 	go func() {
@@ -139,6 +145,7 @@ func executeScript(script, cwd, name string, args []string, config RunConfig) (R
 		for scanner.Scan() {
 			config.Logger.Log(logger.LevelStderr, scanner.Text())
 		}
+		wg.Done()
 	}()
 
 	config.Logger.Log(logger.LevelInfo, fmt.Sprintf("Running command: %+v", cmd.Args))
@@ -166,6 +173,8 @@ func executeScript(script, cwd, name string, args []string, config RunConfig) (R
 			}
 		}
 	}
+
+	wg.Wait()
 
 	endTime := time.Now()
 	duration := endTime.Sub(startTime)
