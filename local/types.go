@@ -1,15 +1,16 @@
 package local
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"time"
 
+	"github.com/fatih/color"
 	"github.com/linuxkit/rtf/logger"
 	"github.com/linuxkit/rtf/sysinfo"
-
-	"time"
 )
 
 const (
@@ -90,15 +91,41 @@ const (
 	Cancel
 )
 
+// TestResultNames provides a mapping of numerical result values to human readable strings
+var TestResultNames = map[TestResult]string{
+	Pass:   "Pass",
+	Fail:   "Fail",
+	Skip:   "Skip",
+	Cancel: "Cancel",
+}
+
+// Sprintf prints the arguments using fmt.Sprintf but colours it depending on the TestResult
+func (r TestResult) Sprintf(format string, a ...interface{}) string {
+	switch r {
+	case Pass:
+		return color.GreenString(format, a...)
+	case Fail:
+		return color.RedString(format, a...)
+	case Cancel:
+		return color.YellowString(format, a...)
+	case Skip:
+		return color.YellowString(format, a...)
+	}
+	return fmt.Sprintf(format, a...)
+}
+
+// TestResultColorFunc provides a mapping of numerical result values to a fmt.Sprintf() style function
+var TestResultColorFunc = map[TestResult]func(a ...interface{}) string{}
+
 // Result encapsulates a TestResult and additional data about a test run
 type Result struct {
-	Test            *Test
-	Name            string // Name may be different to Test.Name() for repeated tests.
-	TestResult      TestResult
-	BenchmarkResult string
-	StartTime       time.Time
-	EndTime         time.Time
-	Duration        time.Duration
+	Test            *Test         `json:"-"`
+	Name            string        `json:"name,omitempty"` // Name may be different to Test.Name() for repeated tests.
+	TestResult      TestResult    `json:"result"`
+	BenchmarkResult string        `json:"benchmark,omitempty"`
+	StartTime       time.Time     `json:"start,omitempty"`
+	EndTime         time.Time     `json:"end,omitempty"`
+	Duration        time.Duration `json:"duration,omitempty"`
 }
 
 // Info encapsulates the information necessary to list tests and test groups
@@ -106,6 +133,7 @@ type Info struct {
 	Name       string
 	TestResult TestResult
 	Summary    string
+	Issue      string
 	Labels     map[string]bool
 	NotLabels  map[string]bool
 }
@@ -153,3 +181,13 @@ func (a ByOrder) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 
 // Less compares whether the order of i is less than that of j
 func (a ByOrder) Less(i, j int) bool { return a[i].Order() < a[j].Order() }
+
+// Summary contains a summary of a whole run, mostly used for writing out a JSON file
+type Summary struct {
+	ID         string             `json:"id,omitempty"`
+	StartTime  time.Time          `json:"start,omitempty"`
+	EndTime    time.Time          `json:"end,omitempty"`
+	SystemInfo sysinfo.SystemInfo `json:"system,omitempty"`
+	Labels     []string           `json:"labels,omitempty"`
+	Results    []Result           `json:"results,omitempty"`
+}

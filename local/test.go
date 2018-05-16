@@ -70,6 +70,7 @@ func (t *Test) List(config RunConfig) []Info {
 	info := Info{
 		Name:      t.Name(),
 		Summary:   t.Tags.Summary,
+		Issue:     t.Tags.Issue,
 		Labels:    t.Labels,
 		NotLabels: t.NotLabels,
 	}
@@ -88,6 +89,7 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 	if !t.willRun(config) {
 		config.Logger.Log(logger.LevelSkip, fmt.Sprintf("%s %.2fs", t.Name(), 0.0))
 		return []Result{{Test: t,
+			Name:       t.Name(),
 			TestResult: Skip,
 		}}, nil
 	}

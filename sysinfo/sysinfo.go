@@ -4,14 +4,14 @@ import "runtime"
 
 // SystemInfo encapsulates useful information about a system
 type SystemInfo struct {
-	OS      string
-	Name    string
-	Version string
-	Arch    string
+	OS      string `json:"os,omitempty"`
+	Name    string `json:"name,omitempty"`
+	Version string `json:"version,omitempty"`
+	Arch    string `json:"arch,omitempty"`
 
-	Model  string
-	CPU    string
-	Memory int64
+	Model  string `json:"model,omitempty"`
+	CPU    string `json:"cpu,omitempty"`
+	Memory int64  `json:"memory,omitempty"`
 }
 
 // GetSystemInfo populates a new SystemInfo with both generic and
