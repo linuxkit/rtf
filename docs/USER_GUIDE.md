@@ -81,6 +81,17 @@ a simple prefix match, so, if you have tests such as `foo.bar` and
 `foo.bar_baz` and use `./rtf run foo.bar`, it will execute both
 `foo.bar` and `foo.bar_baz`.
 
+## Parallel Execution
+
+You may have tests execute in parallel by using the `-p` flag:
+```
+./rtf run -p
+```
+
+All tests across all groups will run in parallel.  You should ensure
+that individual tests have no dependencies on each other since you
+cannot guarantee any test has completed before another has started
+
 
 ## Writing tests
 

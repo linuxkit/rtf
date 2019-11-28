@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/linuxkit/rtf/logger"
@@ -174,12 +175,46 @@ func (g *Group) Run(config RunConfig) ([]Result, error) {
 		}
 	}
 
-	for _, c := range g.Children {
-		res, err := c.Run(config)
-		if err != nil {
-			return results, err
+	if config.Parallel {
+		var wg sync.WaitGroup
+		resCh := make(chan []Result, len(g.Children))
+		errCh := make(chan error, len(g.Children))
+
+		for _, c := range g.Children {
+			wg.Add(1)
+			go func(c TestContainer, cf RunConfig) {
+				defer wg.Done()
+				res, err := c.Run(cf)
+				if err != nil {
+					errCh <- err
+				}
+				resCh <- res
+			}(c, config)
 		}
-		results = append(results, res...)
+
+		go func() {
+			wg.Wait()
+			close(resCh)
+			close(errCh)
+		}()
+
+		for err := range errCh {
+			if err != nil {
+				return results, err
+			}
+		}
+
+		for res := range resCh {
+			results = append(results, res...)
+		}
+	} else {
+		for _, c := range g.Children {
+			res, err := c.Run(config)
+			if err != nil {
+				return results, err
+			}
+			results = append(results, res...)
+		}
 	}
 
 	if g.GroupFilePath != "" {

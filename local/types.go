@@ -161,6 +161,7 @@ type RunConfig struct {
 	Labels      map[string]bool
 	NotLabels   map[string]bool
 	TestPattern string
+	Parallel    bool
 }
 
 // A TestContainer is a container that can hold one or more tests
