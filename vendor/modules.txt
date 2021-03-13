@@ -1,0 +1,76 @@
+# github.com/davecgh/go-spew v1.1.1
+## explicit
+# github.com/docker/distribution v2.6.0-rc.1.0.20170504185108-a40abc69f2ec+incompatible
+## explicit
+github.com/docker/distribution/uuid
+# github.com/fatih/color v1.4.1
+## explicit
+github.com/fatih/color
+# github.com/fsnotify/fsnotify v1.4.3-0.20170329110642-4da3e2cfbabc
+## explicit
+github.com/fsnotify/fsnotify
+# github.com/hashicorp/hcl v0.0.0-20170504190234-a4b07c25de5f
+## explicit
+github.com/hashicorp/hcl
+github.com/hashicorp/hcl/hcl/ast
+github.com/hashicorp/hcl/hcl/parser
+github.com/hashicorp/hcl/hcl/scanner
+github.com/hashicorp/hcl/hcl/strconv
+github.com/hashicorp/hcl/hcl/token
+github.com/hashicorp/hcl/json/parser
+github.com/hashicorp/hcl/json/scanner
+github.com/hashicorp/hcl/json/token
+# github.com/inconshreveable/mousetrap v1.0.0
+## explicit
+github.com/inconshreveable/mousetrap
+# github.com/magiconair/properties v1.7.3-0.20170321093039-51463bfca257
+## explicit
+github.com/magiconair/properties
+# github.com/mattn/go-colorable v0.0.8-0.20170327083344-ded68f7a9561
+## explicit
+github.com/mattn/go-colorable
+# github.com/mattn/go-isatty v0.0.2
+## explicit
+github.com/mattn/go-isatty
+# github.com/mitchellh/mapstructure v0.0.0-20170422000251-cc8532a8e9a5
+## explicit
+github.com/mitchellh/mapstructure
+# github.com/pelletier/go-buffruneio v0.2.0
+## explicit
+github.com/pelletier/go-buffruneio
+# github.com/pelletier/go-toml v0.5.1-0.20170504040314-97253b98df84
+## explicit
+github.com/pelletier/go-toml
+# github.com/spf13/afero v0.0.0-20170217164146-9be650865eab
+## explicit
+github.com/spf13/afero
+github.com/spf13/afero/mem
+# github.com/spf13/cast v1.1.0
+## explicit
+github.com/spf13/cast
+# github.com/spf13/cobra v0.0.0-20170505085157-db6b9a8b3f3f
+## explicit
+github.com/spf13/cobra
+# github.com/spf13/jwalterweatherman v0.0.0-20170109133355-fa7ca7e836cf
+## explicit
+github.com/spf13/jwalterweatherman
+# github.com/spf13/pflag v0.0.0-20170505055244-75859d1ee5f1
+## explicit
+github.com/spf13/pflag
+# github.com/spf13/viper v0.0.0-20170417080815-0967fc9aceab
+## explicit
+github.com/spf13/viper
+# github.com/stretchr/testify v1.7.0
+## explicit
+# golang.org/x/sys v0.0.0-20170427041856-9ccfe848b9db
+## explicit
+golang.org/x/sys/unix
+# golang.org/x/text v0.0.0-20170427093521-470f45bf29f4
+## explicit
+golang.org/x/text/transform
+golang.org/x/text/unicode/norm
+# gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
+## explicit
+# gopkg.in/yaml.v2 v2.0.0-20170407172122-cd8b52f8269e
+## explicit
+gopkg.in/yaml.v2
