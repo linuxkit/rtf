@@ -1,0 +1,77 @@
+name: RTF CI
+on: [push, pull_request]
+
+jobs:
+  test:
+    name: Test
+
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Set up Go 1.15
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.15
+      id: go
+
+    - name: Set path
+      run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+      env:
+         GOPATH: ${{runner.workspace}}
+
+    - name: Get pre-requisites
+      run: |
+            go get -u golang.org/x/lint/golint
+            go get -u github.com/gordonklaus/ineffassign
+      env:
+        GOPATH: ${{runner.workspace}}
+
+    - name: Check out code
+      uses: actions/checkout@v2
+
+    - name: Tests
+      run: |
+        make test
+      env:
+        GOPATH: ${{runner.workspace}}
+
+  build:
+    name: Build
+    needs: test
+    strategy:
+      matrix:
+        os: [linux,darwin,windows]
+
+    runs-on: ubuntu-latest
+    steps:
+ 
+    - name: Set up Go 1.15
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.15
+      id: go
+
+    - name: Check out code
+      uses: actions/checkout@v2
+ 
+    - name: build
+      id: build
+      run: |
+        if grep -q "windows" <<< "${{matrix.os}}"; then
+            export TARGET="windows.exe"
+        else
+            export TARGET="${{matrix.os}}"
+        fi
+        echo "::set-output name=binary::rtf-$TARGET"
+        make clean
+        GOOS=${{matrix.os}} make
+        mv rtf "rtf-${TARGET}"
+      env:
+        GOPATH: ${{runner.workspace}}
+
+    - name: Upload binary
+      uses: actions/upload-artifact@v2
+      with:
+        name: rtf-binaries
+        path: ${{steps.build.outputs.binary}}
+
