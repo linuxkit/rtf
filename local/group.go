@@ -9,31 +9,7 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/linuxkit/rtf/logger"
 )
-
-// NewProject creates a new top-level Group at the provided path
-func NewProject(path string) (*Group, error) {
-	if !filepath.IsAbs(path) {
-		var err error
-		path, err = filepath.Abs(path)
-		if err != nil {
-			return nil, err
-		}
-	}
-	g := &Group{Parent: nil, Path: path}
-	return g, nil
-}
-
-// InitNewProject creates a new Group, and calls Init() on it
-func InitNewProject(path string) (*Group, error) {
-	group, err := NewProject(path)
-	if err != nil {
-		return group, err
-	}
-	return group, group.Init()
-}
 
 // NewGroup creates a new Group with the given parent and path
 func NewGroup(parent *Group, path string) (*Group, error) {
@@ -151,12 +127,47 @@ func (g *Group) List(config RunConfig) []Info {
 	return infos
 }
 
-// Run will run all child groups and tests
-func (g *Group) Run(config RunConfig) ([]Result, error) {
-	var results []Result
+// Gather gathers all runnable child groups and tests
+func (g *Group) Gather(config RunConfig, count int) ([]TestContainer, int) {
 	sort.Sort(ByOrder(g.Children))
 
 	if !g.willRun(config) {
+		return nil, 0
+	}
+	containers := []TestContainer{}
+	var subCount int
+
+	if g.GroupFilePath != "" {
+		containers = append(containers, GroupCommand{Name: g.Name(), FilePath: g.GroupFilePath, Path: g.Path, Type: "init"})
+	}
+
+	for _, c := range g.Children {
+		lst, childCount := c.Gather(config, count+subCount)
+		// if we had no runnable tests, do not bother adding the group init/deinit, just return the empty list
+		if childCount == 0 {
+			continue
+		}
+		containers = append(containers, lst...)
+		subCount += childCount
+	}
+
+	if g.GroupFilePath != "" {
+		containers = append(containers, GroupCommand{Name: g.Name(), FilePath: g.GroupFilePath, Path: g.Path, Type: "deinit"})
+	}
+
+	return containers, subCount
+}
+
+// Run will run all child groups and tests
+func (g *Group) Run(config RunConfig) ([]Result, error) {
+	var results []Result
+
+	// This gathers all of the individual tests and group init/deinit commands
+	// all the way down, leading to a flat list we can execute, rather than recursion.
+	// That should make it easier to break into shards.
+	count := 0
+	runnables, _ := g.Gather(config, count)
+	if len(runnables) == 0 {
 		return []Result{{TestResult: Skip,
 			Name:      g.Name(),
 			StartTime: time.Now(),
@@ -164,31 +175,30 @@ func (g *Group) Run(config RunConfig) ([]Result, error) {
 		}}, nil
 	}
 
-	if g.GroupFilePath != "" {
-		config.Logger.Log(logger.LevelInfo, fmt.Sprintf("%s::ginit()", g.Name()))
-		res, err := executeScript(g.GroupFilePath, g.Path, "", []string{"init"}, config)
-		if err != nil {
-			return results, err
-		}
-		if res.TestResult != Pass {
-			return results, fmt.Errorf("Error running %s", g.GroupFilePath+":init")
-		}
-	}
-
 	if config.Parallel {
 		var wg sync.WaitGroup
 		resCh := make(chan []Result, len(g.Children))
 		errCh := make(chan error, len(g.Children))
 
-		for _, c := range g.Children {
+		for _, c := range runnables {
 			wg.Add(1)
 			go func(c TestContainer, cf RunConfig) {
 				defer wg.Done()
-				res, err := c.Run(cf)
-				if err != nil {
-					errCh <- err
+				var isTest bool
+				if _, ok := c.(*Test); ok {
+					isTest = true
 				}
-				resCh <- res
+				// Run() if one of the following is true: it is not a test; there are no start/end boundaries; the test is within the boundaries
+				if !isTest || (config.start == 0 && config.count == 0) || (count >= config.start && config.start+config.count > count) {
+					res, err := c.Run(cf)
+					if err != nil {
+						errCh <- err
+					}
+					resCh <- res
+				}
+				if isTest {
+					count++
+				}
 			}(c, config)
 		}
 
@@ -208,8 +218,8 @@ func (g *Group) Run(config RunConfig) ([]Result, error) {
 			results = append(results, res...)
 		}
 	} else {
-		for _, c := range g.Children {
-			res, err := c.Run(config)
+		for _, r := range runnables {
+			res, err := r.Run(config)
 			if err != nil {
 				return results, err
 			}
@@ -217,16 +227,6 @@ func (g *Group) Run(config RunConfig) ([]Result, error) {
 		}
 	}
 
-	if g.GroupFilePath != "" {
-		config.Logger.Log(logger.LevelInfo, fmt.Sprintf("%s::gdeinit()", g.Name()))
-		res, err := executeScript(g.GroupFilePath, g.Path, "", []string{"deinit"}, config)
-		if err != nil {
-			return results, err
-		}
-		if res.TestResult != Pass {
-			return results, fmt.Errorf("Error running %s", g.GroupFilePath+":deinit")
-		}
-	}
 	return results, nil
 }
 
@@ -246,4 +246,38 @@ func (g *Group) willRun(config RunConfig) bool {
 	}
 
 	return strings.HasPrefix(config.TestPattern, g.Name()) || strings.HasPrefix(g.Name(), config.TestPattern)
+}
+
+func min(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+// calculateShard calculate the start and end of a slice to use in a given shard of a given total
+// slice and a given number of shards.
+// We split by the total list size. If it is uneven, e.g. 22 elements into 10 shards,
+// then the first shards will be rounded up until the reminder can be split evenly.
+//
+// e.g.
+// 22 elements into 10 shards will be 3, 3, 2, 2, 2, 2, 2, 2, 2, 2
+// 29 elements into 10 shards will be 3, 3, 3, 3, 3, 3, 3, 3, 3, 2
+// 30 elements into 10 shards will be 3, 3, 3, 3, 3, 3, 3, 3, 3, 3
+// 8 elements into 5 shards will be 2, 2, 2, 1, 1
+//
+// Ths important thing is consistency among runs using the same set of parameters
+// so that you can reliably get the same subset each time.
+func calculateShard(size, shard, totalShards int) (start, count int) {
+	elmsPerShard := size / totalShards
+	remainder := size % totalShards
+	before := (shard - 1) * elmsPerShard
+	if remainder > 0 {
+		before += min(remainder, shard-1)
+	}
+	count = elmsPerShard
+	if remainder >= shard {
+		count++
+	}
+	return before, count
 }

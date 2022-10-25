@@ -81,6 +81,14 @@ func (t *Test) List(config RunConfig) []Info {
 	return []Info{info}
 }
 
+// Gather satisfies the TestContainer interface
+func (t *Test) Gather(config RunConfig, count int) ([]TestContainer, int) {
+	if (config.start == 0 && config.count == 0) || (count >= config.start && config.start+config.count > count) {
+		return []TestContainer{t}, 1
+	}
+	return nil, 0
+}
+
 // Run runs a test
 func (t *Test) Run(config RunConfig) ([]Result, error) {
 	var results []Result

@@ -31,10 +31,18 @@ var listCmd = &cobra.Command{
 }
 
 func init() {
+	flags := listCmd.Flags()
+	// shardPattern is 1-based (1/10, 3/10, 10/10) rather than normal computer 0-based (0/9, 2/9, 9/9), because it is easier for
+	// humans to understand when calling the CLI.
+	flags.StringVarP(&shardPattern, "shard", "s", "", "which shard to run, in form of 'N/M' where N is the shard number and M is the total number of shards, smallest shard number is 1")
 	RootCmd.AddCommand(listCmd)
 }
 
 func list(_ *cobra.Command, args []string) error {
+	shard, totalShards, err := parseShardPattern(shardPattern)
+	if err != nil {
+		return err
+	}
 	pattern, err := local.ValidatePattern(args)
 	if err != nil {
 		return err
@@ -44,6 +52,11 @@ func list(_ *cobra.Command, args []string) error {
 	p, err := local.InitNewProject(caseDir)
 	if err != nil {
 		return err
+	}
+	if totalShards > 0 {
+		if err := p.SetShard(shard, totalShards); err != nil {
+			return err
+		}
 	}
 
 	w := new(tabwriter.Writer)
