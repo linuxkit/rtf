@@ -82,8 +82,8 @@ func (t *Test) List(config RunConfig) []Info {
 }
 
 // Gather satisfies the TestContainer interface
-func (t *Test) Gather(config RunConfig, count int) ([]TestContainer, int) {
-	if (config.start == 0 && config.count == 0) || (count >= config.start && config.start+config.count > count) {
+func (t *Test) Gather(config RunConfig) ([]TestContainer, int) {
+	if len(config.restrictToTests) == 0 || config.restrictToTests[t.Name()] {
 		return []TestContainer{t}, 1
 	}
 	return nil, 0
@@ -101,6 +101,7 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 			TestResult: Skip,
 		}}, nil
 	}
+	config.Logger.Log(logger.LevelInfo, fmt.Sprintf("Running test %s", t.Name()))
 
 	if t.Tags.Repeat == 0 {
 		// Always run at least once

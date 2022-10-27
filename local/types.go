@@ -160,18 +160,17 @@ type OSInfo struct {
 
 // RunConfig contains runtime configuration information
 type RunConfig struct {
-	Extra       bool
-	CaseDir     string
-	LogDir      string
-	Logger      logger.LogDispatcher
-	SystemInfo  sysinfo.SystemInfo
-	Labels      map[string]bool
-	NotLabels   map[string]bool
-	TestPattern string
-	Parallel    bool
-	IncludeInit bool
-	start       int
-	count       int
+	Extra           bool
+	CaseDir         string
+	LogDir          string
+	Logger          logger.LogDispatcher
+	SystemInfo      sysinfo.SystemInfo
+	Labels          map[string]bool
+	NotLabels       map[string]bool
+	TestPattern     string
+	Parallel        bool
+	IncludeInit     bool
+	restrictToTests map[string]bool
 }
 
 // GroupCommand is a command that is runnable, either a test or pre/post script.
@@ -187,7 +186,7 @@ type TestContainer interface {
 	Order() int
 	List(config RunConfig) []Info
 	Run(config RunConfig) ([]Result, error)
-	Gather(config RunConfig, count int) ([]TestContainer, int)
+	Gather(config RunConfig) ([]TestContainer, int)
 }
 
 // ByOrder implements the sort.Sorter interface for TestContainer

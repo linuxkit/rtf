@@ -38,6 +38,6 @@ func (g GroupCommand) Order() int {
 }
 
 // Gather satisfies the TestContainer interface
-func (g GroupCommand) Gather(config RunConfig, count int) ([]TestContainer, int) {
+func (g GroupCommand) Gather(config RunConfig) ([]TestContainer, int) {
 	return []TestContainer{&g}, 0
 }
