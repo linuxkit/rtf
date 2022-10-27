@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+
+	"github.com/linuxkit/rtf/logger"
 )
 
 // NewProject creates a new top-level Group at the provided path
@@ -52,11 +54,12 @@ func (p *Project) Run(config RunConfig) ([]Result, error) {
 		return p.Group.Run(config)
 	}
 
-	infos := p.Group.List(config)
-	start, count := calculateShard(len(infos), p.shard, p.totalShards)
-
-	config.start = start
-	config.count = count
+	infos := p.List(config)
+	config.restrictToTests = map[string]bool{}
+	for _, info := range infos {
+		config.restrictToTests[info.Name] = true
+	}
+	config.Logger.Log(logger.LevelInfo, fmt.Sprintf("restricting tests to %v", config.restrictToTests))
 
 	return p.Group.Run(config)
 }
@@ -67,6 +70,14 @@ func (p *Project) List(config RunConfig) []Info {
 	if p.totalShards <= 1 {
 		return infos
 	}
-	start, count := calculateShard(len(infos), p.shard, p.totalShards)
-	return infos[start : start+count]
+	// if sharding, we ignore tests that would be skipped
+	var retInfos []Info
+	for _, info := range infos {
+		if info.TestResult == Skip {
+			continue
+		}
+		retInfos = append(retInfos, info)
+	}
+	start, count := calculateShard(len(retInfos), p.shard, p.totalShards)
+	return retInfos[start : start+count]
 }

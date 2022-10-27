@@ -34,7 +34,7 @@ func init() {
 	flags := listCmd.Flags()
 	// shardPattern is 1-based (1/10, 3/10, 10/10) rather than normal computer 0-based (0/9, 2/9, 9/9), because it is easier for
 	// humans to understand when calling the CLI.
-	flags.StringVarP(&shardPattern, "shard", "s", "", "which shard to run, in form of 'N/M' where N is the shard number and M is the total number of shards, smallest shard number is 1")
+	flags.StringVarP(&shardPattern, "shard", "s", "", "which shard to run, in form of 'N/M' where N is the shard number and M is the total number of shards, smallest shard number is 1. Shards are applied only to tests that would run, not those that would be skipped.")
 	RootCmd.AddCommand(listCmd)
 }
 

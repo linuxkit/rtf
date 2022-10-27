@@ -128,7 +128,7 @@ func (g *Group) List(config RunConfig) []Info {
 }
 
 // Gather gathers all runnable child groups and tests
-func (g *Group) Gather(config RunConfig, count int) ([]TestContainer, int) {
+func (g *Group) Gather(config RunConfig) ([]TestContainer, int) {
 	sort.Sort(ByOrder(g.Children))
 
 	if !g.willRun(config) {
@@ -142,7 +142,7 @@ func (g *Group) Gather(config RunConfig, count int) ([]TestContainer, int) {
 	}
 
 	for _, c := range g.Children {
-		lst, childCount := c.Gather(config, count+subCount)
+		lst, childCount := c.Gather(config)
 		// if we had no runnable tests, do not bother adding the group init/deinit, just return the empty list
 		if childCount == 0 {
 			continue
@@ -165,8 +165,7 @@ func (g *Group) Run(config RunConfig) ([]Result, error) {
 	// This gathers all of the individual tests and group init/deinit commands
 	// all the way down, leading to a flat list we can execute, rather than recursion.
 	// That should make it easier to break into shards.
-	count := 0
-	runnables, _ := g.Gather(config, count)
+	runnables, _ := g.Gather(config)
 	if len(runnables) == 0 {
 		return []Result{{TestResult: Skip,
 			Name:      g.Name(),
@@ -184,21 +183,11 @@ func (g *Group) Run(config RunConfig) ([]Result, error) {
 			wg.Add(1)
 			go func(c TestContainer, cf RunConfig) {
 				defer wg.Done()
-				var isTest bool
-				if _, ok := c.(*Test); ok {
-					isTest = true
+				res, err := c.Run(cf)
+				if err != nil {
+					errCh <- err
 				}
-				// Run() if one of the following is true: it is not a test; there are no start/end boundaries; the test is within the boundaries
-				if !isTest || (config.start == 0 && config.count == 0) || (count >= config.start && config.start+config.count > count) {
-					res, err := c.Run(cf)
-					if err != nil {
-						errCh <- err
-					}
-					resCh <- res
-				}
-				if isTest {
-					count++
-				}
+				resCh <- res
 			}(c, config)
 		}
 
