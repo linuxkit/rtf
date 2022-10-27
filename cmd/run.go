@@ -71,11 +71,12 @@ var (
 )
 
 var (
-	resultDir string
-	id        string
-	symlink   bool
-	extra     bool
-	parallel  bool
+	resultDir    string
+	id           string
+	symlink      bool
+	extra        bool
+	parallel     bool
+	shardPattern string
 )
 
 var runCmd = &cobra.Command{
@@ -90,10 +91,17 @@ func init() {
 	flags.StringVarP(&id, "id", "", "", "ID for this test run")
 	flags.BoolVarP(&extra, "extra", "x", false, "Add extra debug info to log files")
 	flags.BoolVarP(&parallel, "parallel", "p", false, "Run multiple tests in parallel")
+	// shardPattern is 1-based (1/10, 3/10, 10/10) rather than normal computer 0-based (0/9, 2/9, 9/9), because it is easier for
+	// humans to understand when calling the CLI.
+	flags.StringVarP(&shardPattern, "shard", "s", "", "which shard to run, in form of 'N/M' where N is the shard number and M is the total number of shards, smallest shard number is 1")
 	RootCmd.AddCommand(runCmd)
 }
 
 func run(cmd *cobra.Command, args []string) error {
+	shard, totalShards, err := parseShardPattern(shardPattern)
+	if err != nil {
+		return err
+	}
 	pattern, err := local.ValidatePattern(args)
 	if err != nil {
 		return err
@@ -105,6 +113,11 @@ func run(cmd *cobra.Command, args []string) error {
 	p, err := local.InitNewProject(caseDir)
 	if err != nil {
 		return err
+	}
+	if totalShards > 0 {
+		if err := p.SetShard(shard, totalShards); err != nil {
+			return err
+		}
 	}
 
 	var labelList []string
@@ -308,4 +321,24 @@ func setupResultsDirectory(id string, link bool) (string, error) {
 	}
 
 	return baseDir, nil
+}
+
+func parseShardPattern(pattern string) (shard int, total int, err error) {
+	if pattern == "" {
+		return 0, 0, nil
+	}
+	parts := strings.SplitN(pattern, "/", 2)
+	if len(parts) != 2 {
+		return 0, 0, fmt.Errorf("invalid shard pattern: %s", pattern)
+	}
+	if shard, err = strconv.Atoi(parts[0]); err != nil {
+		return 0, 0, fmt.Errorf("invalid shard pattern: %s", pattern)
+	}
+	if total, err = strconv.Atoi(parts[1]); err != nil {
+		return 0, 0, fmt.Errorf("invalid shard pattern: %s", pattern)
+	}
+	if shard < 1 || total < 1 || shard > total {
+		return 0, 0, fmt.Errorf("invalid shard pattern: %s", pattern)
+	}
+	return shard, total, nil
 }

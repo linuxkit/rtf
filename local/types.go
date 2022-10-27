@@ -48,6 +48,13 @@ func checkScript(path, name string) (string, error) {
 	return f, nil
 }
 
+// Project is a group of tests and other groups with a few higher level functions
+type Project struct {
+	*Group
+	shard       int
+	totalShards int
+}
+
 // Group is a group of tests and other groups
 type Group struct {
 	Parent        *Group
@@ -162,13 +169,25 @@ type RunConfig struct {
 	NotLabels   map[string]bool
 	TestPattern string
 	Parallel    bool
+	IncludeInit bool
+	start       int
+	count       int
 }
 
-// A TestContainer is a container that can hold one or more tests
+// GroupCommand is a command that is runnable, either a test or pre/post script.
+type GroupCommand struct {
+	Name     string
+	Type     string
+	FilePath string
+	Path     string
+}
+
+// TestContainer is a container that can hold one or more tests
 type TestContainer interface {
 	Order() int
 	List(config RunConfig) []Info
 	Run(config RunConfig) ([]Result, error)
+	Gather(config RunConfig, count int) ([]TestContainer, int)
 }
 
 // ByOrder implements the sort.Sorter interface for TestContainer
