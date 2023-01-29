@@ -8,10 +8,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-    - name: Set up Go 1.15
-      uses: actions/setup-go@v2
+    - name: Set up Go 1.19
+      uses: actions/setup-go@v3
       with:
-        go-version: 1.15
+        go-version: 1.19.2
       id: go
 
     - name: Set path
@@ -19,15 +19,14 @@ jobs:
       env:
          GOPATH: ${{runner.workspace}}
 
+    - name: Check out code
+      uses: actions/checkout@v3
+
     - name: Get pre-requisites
       run: |
-            go get -u golang.org/x/lint/golint
-            go get -u github.com/gordonklaus/ineffassign
+            make install-deps
       env:
         GOPATH: ${{runner.workspace}}
-
-    - name: Check out code
-      uses: actions/checkout@v2
 
     - name: Tests
       run: |
@@ -45,14 +44,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
  
-    - name: Set up Go 1.15
-      uses: actions/setup-go@v2
+    - name: Set up Go 1.19
+      uses: actions/setup-go@v3
       with:
-        go-version: 1.15
+        go-version: 1.19.2
       id: go
 
     - name: Check out code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
  
     - name: build
       id: build
@@ -70,7 +69,7 @@ jobs:
         GOPATH: ${{runner.workspace}}
 
     - name: Upload binary
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: rtf-binaries
         path: ${{steps.build.outputs.binary}}
