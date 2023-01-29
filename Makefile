@@ -20,7 +20,7 @@ DEPS+=$(wildcard sysinfo/*.go)
 
 PREFIX?=/usr/local
 
-GOLINT:=$(shell command -v golint 2> /dev/null)
+GOLINT:=$(shell command -v golangci-lint 2> /dev/null)
 INEFFASSIGN:=$(shell command -v ineffassign 2> /dev/null)
 
 default: rtf
@@ -43,14 +43,14 @@ rtf: $(DEPS)
 .PHONY: lint
 lint:
 ifndef GOLINT
-	$(error "Please install golint! go get -u github.com/tool/lint")
+	$(error "Please install golangci-lint! http://golangci-lint.run")
 endif
 ifndef INEFFASSIGN
-	$(error "Please install ineffassign! go get -u github.com/gordonklaus/ineffassign")
+	$(error "Please install ineffassign! go install github.com/gordonklaus/ineffassign@latest")
 endif
-	@echo "+ $@: golint, gofmt, go vet, ineffassign"
-	# golint
-	@test -z "$(shell find . -type f -name "*.go" -not -path "./vendor/*" -exec golint {} \; | tee /dev/stderr)"
+	@echo "+ $@: golangci-lint, gofmt, go vet, ineffassign"
+	# golangci-lint
+	@test -z "$$(golangci-lint run ./... | tee /dev/stderr)"
 	# gofmt
 	@test -z "$$(gofmt -s -l .| grep -v .pb. | grep -v vendor/ | tee /dev/stderr)"
 ifeq ($(GOOS),)
@@ -58,12 +58,12 @@ ifeq ($(GOOS),)
 	@test -z "$$(go tool vet -printf=false . 2>&1 | grep -v vendor/ | tee /dev/stderr)"
 endif
 	# ineffassign
-	@test -z $(find . -type f -name "*.go" -not -path "*/vendor/*" -exec ineffassign {} \; | tee /dev/stderr)
+	@test -z $$(ineffassign ./... | tee /dev/stderr)
 
 .PHONY: install-deps
 install-deps:
-	go get -u github.com/tool/lint
-	go get -u github.com/gordonklaus/ineffassign
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.50.1
+	go install github.com/gordonklaus/ineffassign@latest
 
 .PHONY: test
 test: rtf lint
