@@ -42,7 +42,7 @@ func getPlatformSpecifics(info SystemInfo) SystemInfo {
 			v := strings.TrimSpace(fs[1])
 
 			if k == "MemTotal" {
-				v = strings.Replace(v, " kB", "", -1)
+				v = strings.ReplaceAll(v, " kB", "")
 				n, _ := strconv.ParseInt(v, 10, 64)
 				info.Memory = n * 1024
 				break

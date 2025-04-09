@@ -18,7 +18,6 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 	"text/tabwriter"
@@ -55,13 +54,13 @@ func compare(_ *cobra.Command, args []string) error {
 
 	var summaries []local.Summary
 	for _, fileName := range args {
-		data, err := ioutil.ReadFile(fileName)
+		data, err := os.ReadFile(fileName)
 		if err != nil {
 			return err
 		}
 		var s local.Summary
 		if err := json.Unmarshal(data, &s); err != nil {
-			return fmt.Errorf("Failed to unmarshal %s: %v", fileName, err)
+			return fmt.Errorf("failed to unmarshal %s: %v", fileName, err)
 		}
 		summaries = append(summaries, s)
 	}
@@ -74,7 +73,7 @@ func compare(_ *cobra.Command, args []string) error {
 	heading := []string{"Name"}
 	if !csvCompare {
 		heading = append(heading, args...)
-		fmt.Fprintln(tw, strings.Join(heading, "\t"))
+		_, _ = fmt.Fprintln(tw, strings.Join(heading, "\t"))
 	} else {
 		ids := []string{"ID"}
 		starts := []string{"Start Time"}
@@ -101,7 +100,7 @@ func compare(_ *cobra.Command, args []string) error {
 		for j := range summaries {
 			r := summaries[j].Results[i]
 			if r.Name != name {
-				return fmt.Errorf("List of results for %s don't match %s: %s != %s", args[0], args[j], r.Name, name)
+				return fmt.Errorf("list of results for %s don't match %s: %s != %s", args[0], args[j], r.Name, name)
 			}
 
 			resStr := r.TestResult.Sprintf("%s (%s)",
@@ -112,14 +111,14 @@ func compare(_ *cobra.Command, args []string) error {
 			results = append(results, resStr)
 		}
 		if !csvCompare {
-			fmt.Fprintln(tw, strings.Join(results, "\t"))
+			_, _ = fmt.Fprintln(tw, strings.Join(results, "\t"))
 		} else {
 			if err := cw.Write(results); err != nil {
 				return err
 			}
 		}
 	}
-	tw.Flush()
+	_ = tw.Flush()
 	cw.Flush()
 	return nil
 }

@@ -103,7 +103,7 @@ func NewRunConfig(labels string, pattern string) RunConfig {
 // ValidatePattern validates that an arg string is a valid test pattern
 func ValidatePattern(args []string) (string, error) {
 	if len(args) > 1 {
-		return "", fmt.Errorf("Expected only one test pattern")
+		return "", fmt.Errorf("expected only one test pattern")
 	}
 	if len(args) == 0 {
 		return "", nil

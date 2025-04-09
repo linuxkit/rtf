@@ -148,7 +148,7 @@ func run(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	defer tf.Close()
+	defer func() { _ = tf.Close() }()
 
 	tCsv := csv.NewWriter(tf)
 	if err = tCsv.Write(testCsvFields); err != nil {
@@ -159,7 +159,7 @@ func run(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	defer sf.Close()
+	defer func() { _ = sf.Close() }()
 
 	sCsv := csv.NewWriter(sf)
 
@@ -288,7 +288,7 @@ func run(cmd *cobra.Command, args []string) error {
 	log.Log(logger.LevelSummary, fmt.Sprintf("Duration: %.2fs", duration.Seconds()))
 
 	if failed > 0 {
-		return fmt.Errorf("Some tests failed")
+		return fmt.Errorf("some tests failed")
 	}
 	return nil
 }

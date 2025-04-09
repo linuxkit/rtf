@@ -37,7 +37,7 @@ func (t *Test) Init() error {
 	t.Summary = tags.Summary
 	order, name := getNameAndOrder(filepath.Base(t.Path))
 	if t.Parent == nil {
-		return fmt.Errorf("A test should have a parent group")
+		return fmt.Errorf("a test should have a parent group")
 	}
 	t.Tags.Name = fmt.Sprintf("%s.%s", t.Parent.Name(), name)
 	t.Labels, t.NotLabels = ParseLabels(t.Tags.Labels)
@@ -129,7 +129,7 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 		if t.Parent.PreTestPath != "" {
 			res, err := executeScript(t.Parent.PreTestPath, t.Path, name, []string{name}, config)
 			if res.TestResult != Pass {
-				return results, fmt.Errorf("Error running: %s. %s", t.Parent.PreTestPath, err.Error())
+				return results, fmt.Errorf("error running: %s. %s", t.Parent.PreTestPath, err.Error())
 			}
 		}
 		// Run the test
@@ -156,7 +156,7 @@ func (t *Test) Run(config RunConfig) ([]Result, error) {
 		if t.Parent.PostTestPath != "" {
 			res, err := executeScript(t.Parent.PostTestPath, t.Path, name, []string{name, fmt.Sprintf("%d", res.TestResult)}, config)
 			if res.TestResult != Pass {
-				return results, fmt.Errorf("Error running: %s. %s", t.Parent.PostTestPath, err.Error())
+				return results, fmt.Errorf("error running: %s. %s", t.Parent.PostTestPath, err.Error())
 			}
 		}
 		res.Test = t

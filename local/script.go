@@ -61,7 +61,7 @@ func executeScript(script, cwd, name string, args []string, config RunConfig) (R
 		}
 	}
 	if executable == "" {
-		return Result{}, fmt.Errorf("Can't find a suitable shell to execute %s", script)
+		return Result{}, fmt.Errorf("can't find a suitable shell to execute %s", script)
 	}
 	cmdArgs = append(cmdArgs, script)
 	cmdArgs = append(cmdArgs, args...)

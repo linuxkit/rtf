@@ -36,7 +36,7 @@ func TestParseBadTags(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Should have caused an error")
 	}
-	if err.Error() != "Field LABELS specified multiple times" {
+	if err.Error() != "field LABELS specified multiple times" {
 		t.Fatalf("Wrong error message")
 	}
 }
