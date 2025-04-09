@@ -63,11 +63,11 @@ func list(_ *cobra.Command, args []string) error {
 	w.Init(os.Stdout, 0, 8, 0, '\t', 0)
 
 	lst := p.List(config)
-	fmt.Fprint(w, "STATE\tTEST\tLABELS\n")
+	_, _ = fmt.Fprint(w, "STATE\tTEST\tLABELS\n")
 	for _, i := range lst {
 		state := i.TestResult.Sprintf(local.TestResultNames[i.TestResult])
-		fmt.Fprintf(w, "%s\t%s\t%s\n", state, i.Name, i.LabelString())
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", state, i.Name, i.LabelString())
 	}
-	w.Flush()
+	_ = w.Flush()
 	return nil
 }

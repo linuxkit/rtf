@@ -54,7 +54,7 @@ func info(_ *cobra.Command, _ []string) error {
 
 	lst := p.List(config)
 	if !csvInfo {
-		fmt.Fprintf(tw, "NAME\tDESCRIPTION\n")
+		_, _ = fmt.Fprintf(tw, "NAME\tDESCRIPTION\n")
 	} else {
 		heading := []string{"Name", "Description", "Known issues"}
 		if err := cw.Write(heading); err != nil {
@@ -64,7 +64,7 @@ func info(_ *cobra.Command, _ []string) error {
 
 	for _, i := range lst {
 		if !csvInfo {
-			fmt.Fprintf(tw, "%s\t%s\n", i.Name, i.Summary)
+			_, _ = fmt.Fprintf(tw, "%s\t%s\n", i.Name, i.Summary)
 		} else {
 			out := []string{i.Name, i.Summary, i.Issue}
 			if err := cw.Write(out); err != nil {
@@ -72,7 +72,7 @@ func info(_ *cobra.Command, _ []string) error {
 			}
 		}
 	}
-	tw.Flush()
+	_ = tw.Flush()
 	cw.Flush()
 	return nil
 }

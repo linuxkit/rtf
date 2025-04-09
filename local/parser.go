@@ -43,7 +43,7 @@ func ParseTags(file string) (*Tags, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	tags := &Tags{}
 	scanner := bufio.NewScanner(f)
@@ -80,7 +80,7 @@ func ParseTags(file string) (*Tags, error) {
 								}
 							} else {
 								if v.String() != "" {
-									return nil, fmt.Errorf("Field %s specified multiple times", rt)
+									return nil, fmt.Errorf("field %s specified multiple times", rt)
 								}
 								v.SetString(tagValue)
 							}

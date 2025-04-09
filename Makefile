@@ -50,7 +50,7 @@ ifndef INEFFASSIGN
 endif
 	@echo "+ $@: golangci-lint, gofmt, go vet, ineffassign"
 	# golangci-lint
-	@test -z "$$(golangci-lint run ./... | tee /dev/stderr)"
+	golangci-lint run ./...
 	# gofmt
 	@test -z "$$(gofmt -s -l .| grep -v .pb. | grep -v vendor/ | tee /dev/stderr)"
 ifeq ($(GOOS),)
@@ -62,7 +62,7 @@ endif
 
 .PHONY: install-deps
 install-deps:
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.50.1
+	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.0.2
 	go install github.com/gordonklaus/ineffassign@latest
 
 .PHONY: test
